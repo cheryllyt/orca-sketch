@@ -1,3 +1,7 @@
+#include <iostream>
+
+#include "salsa-src/genzipf.h"
+
 using namespace std;
 
 int main(int argc, char* argv[]) {
@@ -21,7 +25,26 @@ int main(int argc, char* argv[]) {
     // 3. Use the 10 bits to map into a bucket
     // 4. Use the 22 bits to map into a row in the lookup table
 
+    if (argc < 4) {
+        cout << "Usage Error:\n";
+        cout << "argv[1]: int N\n";
+        cout << "argv[2]: int Seed\n";
+        cout << "argv[3]: float alpha\n";
+        system("pause");
+		return 0;
+    }
 
+    int N = atoi(argv[1]); // largest: 99000000
+    int Seed = atoi(argv[2]); // 42
+    float alpha = atof(argv[3]); // e.g. 0.6, 0.8, 1, 1.2, 1.5
+
+    if (alpha > 0) {
+        char path[] = "./zipf";
+        genzipf(path, Seed, alpha, 1 << 24, N);
+        cout << "\nzipf generation complete!\n";
+    }
+
+    
 
     return 0;
 }

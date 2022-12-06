@@ -1,6 +1,8 @@
+#include <Python/Python.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <iostream>
+#include <fstream>
 
 #include "ORCAS.hpp"
 
@@ -17,22 +19,36 @@ ORCASketch::ORCASketch()
 
 ORCASketch::~ORCASketch()
 {
-	delete[] orca_sketch;
+	// TODO: delete[] bucket_counter_lookup_table
+    delete[] orca_sketch;
     delete[] bobhash;
 }
 
-void ORCASketch::initialize(int sketch_size, int number_of_buckets, int number_of_bucket_counters, int seed)
+void ORCASketch::initialize(int sketch_size, int number_of_buckets, int number_of_bucket_counters, int seed, char *py_bucket_size, char *py_number_of_bucket_counters)
 {
     this->sketch_size = sketch_size;
     this->number_of_buckets = number_of_buckets;
     this->number_of_bucket_counters = number_of_bucket_counters;
+    
+    this->py_bucket_size = py_bucket_size;
+    this->py_number_of_bucket_counters = py_number_of_bucket_counters;
 
     bucket_size = sketch_size / number_of_buckets;
     bucket_mask = number_of_buckets - 1;
 
     number_of_options = combination();
     option_mask = number_of_options - 1;
-    // bucket_counter_lookup_table = create_bucket_counter_lookup_table();
+    bucket_counter_lookup_table = create_bucket_counter_lookup_table();
+
+    cout << "\n";
+    for (int i = 0; i < number_of_options; i++)
+    {
+        for (int j = 0; j < number_of_bucket_counters; j++)
+        {
+            cout << bucket_counter_lookup_table[i][j] << " ";
+        }
+        cout << "\n";
+    }
 
     cout << "\nsketch_size: " << sketch_size << "\n";
     cout << "number_of_buckets: " << number_of_buckets << "\n";
@@ -112,8 +128,6 @@ int ORCASketch::combination()
     return factorial(bucket_size) / (factorial(number_of_bucket_counters) * factorial(bucket_size - number_of_bucket_counters));
 }
 
-// TODO:
-// lookup table: 0-(bucket_size-1) ; get a list of all combinations
 // Lookup table (of counter combinations)
 int **ORCASketch::create_bucket_counter_lookup_table()
 {
@@ -124,40 +138,47 @@ int **ORCASketch::create_bucket_counter_lookup_table()
         lookup_table[i] = new int[number_of_bucket_counters]();
     }
 
-    // TODO: put code back in here & change var names
+    // run python script to generate lookup table
+    FILE* file;
+    char py_file_name[] = "lookup_table.py";
 
+    int py_argc = 3;
+    char *py_argv[3];
+    py_argv[0] = py_file_name;
+    py_argv[1] = py_bucket_size;
+    py_argv[2] = py_number_of_bucket_counters;
+    // int* bucket_size_ptr = &bucket_size;
+    // py_argv[1] = reinterpret_cast<char*>(bucket_size_ptr);
+    // int* number_of_bucket_counters_ptr = &number_of_bucket_counters;
+    // py_argv[2] = reinterpret_cast<char*>(number_of_bucket_counters_ptr);
 
+    Py_SetProgramName(py_argv[0]);
+    Py_Initialize();
+    PySys_SetArgv(py_argc, py_argv);
+    file = fopen(py_file_name, "r");
+    PyRun_SimpleFile(file, py_file_name);
+    Py_Finalize();
+
+    // load combinations into lookup_table
+    char lookup_table_file_name[] = "lookup_table.txt";
+    ifstream f(lookup_table_file_name);
+
+    char num;
+    int int_num = -1;
+
+    for (int i = 0; i < number_of_options; i++)
+    {
+        for (int j = 0; j < number_of_bucket_counters; j++)
+        {
+            while (int_num < 0)
+            {
+                num = f.get();
+                int_num = num - 48;
+            }
+            lookup_table[i][j] = int_num;
+            int_num = -1;
+        }
+    }
 
     return lookup_table;
 }
-
-// // TODO: delete
-// int **ORCASketch::lookup_table_test(int n_options, int n_buc_count, int buc_siz)
-// {
-//     int** lookup_table = new int*[n_options];
-
-//     for (int i = 0; i < n_options; i++)
-//     {
-//         lookup_table[i] = new int[n_buc_count]();
-//     }
-
-//     // TODO: fill each row & indiv index with combo
-//     // (bucket_size) choose (number_of_bucket_counters)
-
-//     // 1 2 3 4 5        1 2 3 4 5
-//     // ---------        ---------
-//     // 1 2 3            1 2 3 4
-//     // 1 2   4          1 2 3   5
-//     // 1 2     5        1 2   4 5
-//     // 1   3 4          1   3 4 5
-//     // 1   3   5          2 3 4 5
-//     // 1     4 5
-//     //   2 3 4
-//     //   2 3   5
-//     //   2   4 5
-//     //     3 4 5
-
-    
-
-//     return lookup_table;
-// }

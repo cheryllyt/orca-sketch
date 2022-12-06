@@ -3,9 +3,11 @@
 #ifndef ORCA_SKETCH
 #define ORCA_SKETCH
 
+#include <Python/Python.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <iostream>
+#include <fstream>
 
 #include "salsa-src/BobHash.hpp"
 
@@ -17,12 +19,15 @@ class ORCASketch {
 	int number_of_buckets;
     int number_of_bucket_counters;
 
+    char *py_bucket_size;
+    char *py_number_of_bucket_counters;
+
     int bucket_size;
     int bucket_mask;
 
     int number_of_options; 
     int option_mask;
-    // int **bucket_counter_lookup_table;
+    int **bucket_counter_lookup_table;
 
     uint32_t *orca_sketch;
 	BOBHash *bobhash;
@@ -36,10 +41,7 @@ public:
 	ORCASketch();
     ~ORCASketch();
 
-    // TODO: delete
-    // int **lookup_table_test(int n_options, int n_buc_count, int buc_siz);
-
-	void initialize(int sketch_size, int bucket_size, int number_of_bucket_counters, int seed);
+	void initialize(int sketch_size, int bucket_size, int number_of_bucket_counters, int seed, char *py_bucket_size, char *py_number_of_bucket_counters);
 	void increment(const char * str);
 	uint64_t query(const char * str);
 

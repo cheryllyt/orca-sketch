@@ -6,9 +6,10 @@
 
 #include "ORCAS.hpp"
 
-#define NUMBER_OF_HASH_FUNC 2
-#define BUCKET_HASH 0
-#define OPTION_HASH 1
+#define NUMBER_OF_HASH_FUNC 1
+#define BOBHASH_INDEX 0
+#define LEAST_SIGNIF_10 1023
+#define MOST_SIGNIF_10 10
 #define FT_SIZE 13
 
 using namespace std;
@@ -60,23 +61,18 @@ void ORCASketch::initialize(int sketch_size, int number_of_buckets, int number_o
 
     orca_sketch = new uint32_t[sketch_size]();
 
-    // TODO: use 2 hash functions
-    // 0: to map into bucket
-    // 1: to choose which rows in lookup table
-
     bobhash = new BOBHash[NUMBER_OF_HASH_FUNC];
-    for (int i = 0; i < NUMBER_OF_HASH_FUNC; i++)
-    {
-        bobhash[i].initialize(seed*(7 + i) + i + 100);
-    }
+    bobhash[BOBHASH_INDEX].initialize(seed*(7) + 100);
 }
 
 void ORCASketch::increment(const char * str)
 {
-    uint bucket_index = (bobhash[BUCKET_HASH].run(str, FT_SIZE)) & bucket_mask;
+    uint bobhash_return = (bobhash[BOBHASH_INDEX].run(str, FT_SIZE));
+
+    uint bucket_index = (bobhash_return & LEAST_SIGNIF_10) & bucket_mask;
     cout << "\nbucket_index: " << bucket_index << "\n";
 
-    uint option_index = (bobhash[OPTION_HASH].run(str, FT_SIZE)) % option_mask;
+    uint option_index = (bobhash_return >> MOST_SIGNIF_10) % option_mask;
     cout << "option_index: " << option_index << "\n";
 
     for (int i = 0; i < number_of_bucket_counters; i++)
@@ -105,10 +101,12 @@ void ORCASketch::increment(const char * str)
 
 uint64_t ORCASketch::query(const char * str)
 {
-    uint bucket_index = (bobhash[BUCKET_HASH].run(str, FT_SIZE)) & bucket_mask;
+    uint bobhash_return = (bobhash[BOBHASH_INDEX].run(str, FT_SIZE));
+
+    uint bucket_index = (bobhash_return & LEAST_SIGNIF_10) & bucket_mask;
     cout << "\nbucket_index: " << bucket_index << "\n";
 
-    uint option_index = (bobhash[OPTION_HASH].run(str, FT_SIZE)) % option_mask;
+    uint option_index = (bobhash_return >> MOST_SIGNIF_10) % option_mask;
     cout << "option_index: " << option_index << "\n";
 
     uint32_t min = UINT32_MAX;

@@ -103,11 +103,45 @@ void ORCASketch::increment(const char * str)
     cout << "\n";
 }
 
-// TODO
-// hash to get bucket index, and all bucket counter indexes
 uint64_t ORCASketch::query(const char * str)
 {
-    return 0;
+    uint bucket_index = (bobhash[BUCKET_HASH].run(str, FT_SIZE)) & bucket_mask;
+    cout << "\nbucket_index: " << bucket_index << "\n";
+
+    uint option_index = (bobhash[OPTION_HASH].run(str, FT_SIZE)) % option_mask;
+    cout << "option_index: " << option_index << "\n";
+
+    uint32_t min = UINT32_MAX;
+
+    for (int i = 0; i < number_of_bucket_counters; i++)
+    {
+        int counter_index = bucket_counter_lookup_table[option_index][i];
+        cout << "counter_index " << i << ": " << counter_index << "\n";
+
+        int sketch_index = (bucket_size * bucket_index) + counter_index;
+
+        uint32_t counter_value = orca_sketch[sketch_index];
+        cout << "counter_value: " << counter_value << "\n";
+        if (counter_value < min)
+        {
+            min = counter_value;
+        }
+    }
+
+    // test code for printing - TODO: delete
+    cout << "\norca_sketch for query: ";
+    for (int j = 0; j < sketch_size; j++)
+    {
+        if (j % bucket_size == 0)
+        {
+            cout << "| ";
+        }
+        cout << orca_sketch[j] << " ";
+    }
+    cout << "\n";
+    cout << "min: " << min << "\n";
+
+    return min;
 }
 
 int ORCASketch::factorial(int n)

@@ -4,6 +4,7 @@
 #include "salsa-src/genzipf.h"
 
 #include "ORCAS.hpp"
+#include "ORCASTests.hpp"
 
 #define FT_SIZE 13
 
@@ -30,7 +31,7 @@ using namespace std;
 
 // command to compile on MacBook:
 // ------------------------------
-// g++ main.cpp ORCAS.cpp salsa-src/BobHash.cpp -framework Python
+// g++ main.cpp ORCAS.cpp ORCASTests.cpp salsa-src/BobHash.cpp -framework Python
 // e.g. ./a.out 10 42 1 32 4 3 8
 
 int main(int argc, char* argv[])
@@ -96,6 +97,11 @@ int main(int argc, char* argv[])
 		orcasketch.increment(data + i);
         orcasketch.query(data + i);
 	}
+
+    // ORCA Sketch tests
+    test_orcas_error_on_arrival();
+    test_orcas_speed();
+    cout << "\nTests complete!\n";
 
     return 0;
 }

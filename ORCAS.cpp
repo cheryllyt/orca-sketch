@@ -10,6 +10,7 @@
 #define BOBHASH_INDEX 0
 #define LEAST_SIGNIF_10 1023
 #define MOST_SIGNIF_10 10
+#define CHAR_TO_INT_DIFF 48
 #define FT_SIZE 13
 
 using namespace std;
@@ -198,7 +199,7 @@ int **ORCASketch::create_bucket_counter_lookup_table()
             while (int_num < 0)
             {
                 num = f.get();
-                int_num = num - 48;
+                int_num = num - CHAR_TO_INT_DIFF;
             }
             lookup_table[i][j] = int_num;
             int_num = -1;

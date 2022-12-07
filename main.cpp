@@ -31,7 +31,7 @@ using namespace std;
 // command to compile on MacBook:
 // ------------------------------
 // g++ main.cpp ORCAS.cpp salsa-src/BobHash.cpp -framework Python
-// e.g. ./a.out 10 42 1 32 4 3
+// e.g. ./a.out 10 42 1 32 4 3 8
 
 int main(int argc, char* argv[])
 {
@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
     int number_of_bucket_counters = atoi(argv[6]); // e.g. 3
 
     // TODO: find a way to pass these in without separate py args
-    char* py_bucket_size = argv[7];
+    char* py_bucket_size = argv[7]; // must be sketch_size / number_of_buckets
     char* py_number_of_bucket_counters = argv[6];
 
     char path[] = "./zipf";

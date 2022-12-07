@@ -6,7 +6,7 @@
 
 #include "ORCAS.hpp"
 
-#define NUMBER_OF_HASH_FUNC 4
+#define NUMBER_OF_HASH_FUNC 2
 #define BUCKET_HASH 0
 #define OPTION_HASH 1
 #define FT_SIZE 13
@@ -64,10 +64,6 @@ void ORCASketch::initialize(int sketch_size, int number_of_buckets, int number_o
     // 0: to map into bucket
     // 1: to choose which rows in lookup table
 
-    // currently using (number_of_bucket_counters + 1) hash functions
-    // 0: to map into bucket
-    // 1-n: to choose which counters within a bucket to map into
-
     bobhash = new BOBHash[NUMBER_OF_HASH_FUNC];
     for (int i = 0; i < NUMBER_OF_HASH_FUNC; i++)
     {
@@ -80,15 +76,16 @@ void ORCASketch::increment(const char * str)
     uint bucket_index = (bobhash[BUCKET_HASH].run(str, FT_SIZE)) & bucket_mask;
     cout << "\nbucket_index: " << bucket_index << "\n";
 
-    // currently using number_of_bucket_counters hash functions
-    for (int i = 1; i < (number_of_bucket_counters + 1); i++)
+    uint option_index = (bobhash[OPTION_HASH].run(str, FT_SIZE)) % option_mask;
+    cout << "option_index: " << option_index << "\n";
+
+    for (int i = 0; i < number_of_bucket_counters; i++)
     {
-        int bucket_counter_mask = bucket_size - 1;
-        uint bucket_counter_index = (bobhash[i].run(str, FT_SIZE)) & bucket_counter_mask;
-        cout << "bucket_counter_index: " << bucket_counter_index << "\n";
+        int counter_index = bucket_counter_lookup_table[option_index][i];
+        cout << "counter_index " << i << ": " << counter_index << "\n";
 
         // calculate exact index in ORCASketch to increment
-        int sketch_index = (bucket_size * bucket_index) + bucket_counter_index;
+        int sketch_index = (bucket_size * bucket_index) + counter_index;
         cout << "sketch_index: " << sketch_index << "\n";
         orca_sketch[sketch_index]++;
     }
@@ -147,10 +144,6 @@ int **ORCASketch::create_bucket_counter_lookup_table()
     py_argv[0] = py_file_name;
     py_argv[1] = py_bucket_size;
     py_argv[2] = py_number_of_bucket_counters;
-    // int* bucket_size_ptr = &bucket_size;
-    // py_argv[1] = reinterpret_cast<char*>(bucket_size_ptr);
-    // int* number_of_bucket_counters_ptr = &number_of_bucket_counters;
-    // py_argv[2] = reinterpret_cast<char*>(number_of_bucket_counters_ptr);
 
     Py_SetProgramName(py_argv[0]);
     Py_Initialize();

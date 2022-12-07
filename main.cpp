@@ -94,6 +94,7 @@ int main(int argc, char* argv[])
 	for (int64_t i = 0; i < stop_loop; i += FT_SIZE)
 	{
 		orcasketch.increment(data + i);
+        orcasketch.query(data + i);
 	}
 
     return 0;

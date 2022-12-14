@@ -28,7 +28,7 @@ class ORCASketch {
     int **bucket_counter_lookup_table;
 
     uint32_t *orca_sketch;
-	BOBHash *bobhash;
+    BOBHash bobhash;
 
     int factorial(int n);
     int combination();

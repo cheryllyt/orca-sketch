@@ -8,7 +8,6 @@
 #include "ORCAS.hpp"
 
 #define NUMBER_OF_HASH_FUNC 1
-#define BOBHASH_INDEX 0
 #define LEAST_SIGNIF_10 1023
 #define MOST_SIGNIF_10 10
 #define CHAR_TO_INT_DIFF 48
@@ -28,7 +27,6 @@ ORCASketch::~ORCASketch()
 	}
     delete[] bucket_counter_lookup_table;
     delete[] orca_sketch;
-    delete[] bobhash;
 }
 
 void ORCASketch::initialize(int sketch_size, int number_of_buckets, int number_of_bucket_counters, int seed)
@@ -65,14 +63,12 @@ void ORCASketch::initialize(int sketch_size, int number_of_buckets, int number_o
 
     orca_sketch = new uint32_t[sketch_size]();
 
-    // TODO: change into just new BOBHash rather than BOBHash[]
-    bobhash = new BOBHash[NUMBER_OF_HASH_FUNC];
-    bobhash[BOBHASH_INDEX].initialize(seed*(7) + 100);
+    bobhash.initialize(seed*(7) + 100);
 }
 
 void ORCASketch::increment(const char * str)
 {
-    uint bobhash_return = (bobhash[BOBHASH_INDEX].run(str, FT_SIZE));
+    uint bobhash_return = (bobhash.run(str, FT_SIZE));
 
     uint bucket_index = (bobhash_return & LEAST_SIGNIF_10) & bucket_mask;
     cout << "\nbucket_index: " << bucket_index << "\n";
@@ -106,7 +102,7 @@ void ORCASketch::increment(const char * str)
 
 uint64_t ORCASketch::query(const char * str)
 {
-    uint bobhash_return = (bobhash[BOBHASH_INDEX].run(str, FT_SIZE));
+    uint bobhash_return = (bobhash.run(str, FT_SIZE));
 
     uint bucket_index = (bobhash_return & LEAST_SIGNIF_10) & bucket_mask;
     cout << "\nbucket_index: " << bucket_index << "\n";

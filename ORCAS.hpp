@@ -41,7 +41,7 @@ public:
 
 	void initialize(int sketch_size, int bucket_size, int number_of_bucket_counters, int seed);
 	void increment(const char * str);
-	uint64_t query(const char * str);
+	uint32_t query(const char * str);
 
 };
 

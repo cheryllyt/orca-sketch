@@ -76,13 +76,14 @@ void ORCASketch::increment(const char * str)
     uint option_index = (bobhash_return >> MOST_SIGNIF_10) % option_mask;
     cout << "option_index: " << option_index << "\n";
 
+    uint exact_bucket_index = bucket_size * bucket_index;
     for (int i = 0; i < number_of_bucket_counters; i++)
     {
         int counter_index = bucket_counter_lookup_table[option_index][i];
         cout << "counter_index " << i << ": " << counter_index << "\n";
 
         // calculate exact index in ORCASketch to increment
-        int sketch_index = (bucket_size * bucket_index) + counter_index;
+        int sketch_index = exact_bucket_index + counter_index;
         cout << "sketch_index: " << sketch_index << "\n";
         orca_sketch[sketch_index]++;
     }
@@ -100,7 +101,7 @@ void ORCASketch::increment(const char * str)
     cout << "\n";
 }
 
-uint64_t ORCASketch::query(const char * str)
+uint32_t ORCASketch::query(const char * str)
 {
     uint bobhash_return = (bobhash.run(str, FT_SIZE));
 
@@ -112,12 +113,13 @@ uint64_t ORCASketch::query(const char * str)
 
     uint32_t min = UINT32_MAX;
 
+    uint exact_bucket_index = bucket_size * bucket_index;
     for (int i = 0; i < number_of_bucket_counters; i++)
     {
         int counter_index = bucket_counter_lookup_table[option_index][i];
         cout << "counter_index " << i << ": " << counter_index << "\n";
 
-        int sketch_index = (bucket_size * bucket_index) + counter_index;
+        int sketch_index = exact_bucket_index + counter_index;
 
         uint32_t counter_value = orca_sketch[sketch_index];
         cout << "counter_value: " << counter_value << "\n";

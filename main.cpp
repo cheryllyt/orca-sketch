@@ -31,20 +31,19 @@ using namespace std;
 
 // command to compile on MacBook:
 // ------------------------------
-// g++ main.cpp ORCAS.cpp ORCASTests.cpp salsa-src/BobHash.cpp -framework Python
-// e.g. ./a.out 10 42 1 32 4 3 8
+// g++ -std=c++17 main.cpp ORCAS.cpp ORCASTests.cpp salsa-src/BobHash.cpp -framework Python
+// e.g. ./a.out 10 42 1 32 4 3
 
 int main(int argc, char* argv[])
 {
-    if (argc < 8) {
+    if (argc < 7) {
         cout << "Usage Error:\n";
         cout << "argv[1]: int N\n";
         cout << "argv[2]: int seed\n";
         cout << "argv[3]: float alpha\n";
         cout << "argv[4]: int sketch_size\n";
         cout << "argv[5]: int number_of_buckets\n";
-        cout << "argv[6]: int/char* number_of_bucket_counters\n";
-        cout << "argv[7]: char* bucket_size\n";
+        cout << "argv[6]: int number_of_bucket_counters\n";
         system("pause");
 		return 0;
     }
@@ -58,10 +57,6 @@ int main(int argc, char* argv[])
     int sketch_size = atoi(argv[4]); // e.g. 32
     int number_of_buckets = atoi(argv[5]); // e.g. 4
     int number_of_bucket_counters = atoi(argv[6]); // e.g. 3
-
-    // TODO: find a way to pass these in without separate py args
-    char* py_bucket_size = argv[7]; // must be sketch_size / number_of_buckets
-    char* py_number_of_bucket_counters = argv[6];
 
     char path[] = "./zipf";
     char* data = new char[FT_SIZE * N]();
@@ -89,7 +84,7 @@ int main(int argc, char* argv[])
     
     // ORCA Sketch driver code
     ORCASketch orcasketch;
-    orcasketch.initialize(sketch_size, number_of_buckets, number_of_bucket_counters, seed, py_bucket_size, py_number_of_bucket_counters);
+    orcasketch.initialize(sketch_size, number_of_buckets, number_of_bucket_counters, seed);
 
     int64_t stop_loop = N * FT_SIZE;
 	for (int64_t i = 0; i < stop_loop; i += FT_SIZE)

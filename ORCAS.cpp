@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>
+#include <charconv>
 
 #include "ORCAS.hpp"
 
@@ -21,19 +22,20 @@ ORCASketch::ORCASketch()
 
 ORCASketch::~ORCASketch()
 {
-	// TODO: delete[] bucket_counter_lookup_table
+    for (int i = 0; i < number_of_options; ++i)
+	{
+		delete[] bucket_counter_lookup_table[i];
+	}
+    delete[] bucket_counter_lookup_table;
     delete[] orca_sketch;
     delete[] bobhash;
 }
 
-void ORCASketch::initialize(int sketch_size, int number_of_buckets, int number_of_bucket_counters, int seed, char *py_bucket_size, char *py_number_of_bucket_counters)
+void ORCASketch::initialize(int sketch_size, int number_of_buckets, int number_of_bucket_counters, int seed)
 {
     this->sketch_size = sketch_size;
     this->number_of_buckets = number_of_buckets;
     this->number_of_bucket_counters = number_of_bucket_counters;
-    
-    this->py_bucket_size = py_bucket_size;
-    this->py_number_of_bucket_counters = py_number_of_bucket_counters;
 
     bucket_size = sketch_size / number_of_buckets;
     bucket_mask = number_of_buckets - 1;
@@ -42,6 +44,7 @@ void ORCASketch::initialize(int sketch_size, int number_of_buckets, int number_o
     option_mask = number_of_options - 1;
     bucket_counter_lookup_table = create_bucket_counter_lookup_table();
 
+    // test code for printing - TODO: delete
     cout << "\n";
     for (int i = 0; i < number_of_options; i++)
     {
@@ -62,6 +65,7 @@ void ORCASketch::initialize(int sketch_size, int number_of_buckets, int number_o
 
     orca_sketch = new uint32_t[sketch_size]();
 
+    // TODO: change into just new BOBHash rather than BOBHash[]
     bobhash = new BOBHash[NUMBER_OF_HASH_FUNC];
     bobhash[BOBHASH_INDEX].initialize(seed*(7) + 100);
 }
@@ -169,19 +173,26 @@ int **ORCASketch::create_bucket_counter_lookup_table()
     }
 
     // run python script to generate lookup table
-    FILE* file;
     char py_file_name[] = "lookup_table.py";
 
     int py_argc = 3;
     char *py_argv[3];
     py_argv[0] = py_file_name;
-    py_argv[1] = py_bucket_size;
-    py_argv[2] = py_number_of_bucket_counters;
+
+    int bucket_size_len = to_string(bucket_size).length();
+    char* bucket_size_char = new char[bucket_size_len];
+    to_chars(bucket_size_char, bucket_size_char + bucket_size_len, bucket_size);
+    py_argv[1] = bucket_size_char;
+
+    int number_of_bucket_counters_len = to_string(number_of_bucket_counters).length();
+    char* number_of_bucket_counters_char = new char[number_of_bucket_counters_len];
+    to_chars(number_of_bucket_counters_char, number_of_bucket_counters_char + number_of_bucket_counters_len, number_of_bucket_counters);
+    py_argv[2] = number_of_bucket_counters_char;
 
     Py_SetProgramName(py_argv[0]);
     Py_Initialize();
     PySys_SetArgv(py_argc, py_argv);
-    file = fopen(py_file_name, "r");
+    FILE* file = fopen(py_file_name, "r");
     PyRun_SimpleFile(file, py_file_name);
     Py_Finalize();
 

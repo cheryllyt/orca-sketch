@@ -4,8 +4,8 @@ import itertools
 if len(sys.argv) < 3:
   sys.exit("Missing args - argv[1]: bucket_size, argv[2]: number_of_bucket_counters")
 
-bucket_size = int(sys.argv[1], 16)
-number_of_bucket_counters = int(sys.argv[2], 16)
+bucket_size = int(sys.argv[1])
+number_of_bucket_counters = int(sys.argv[2])
 
 table = itertools.combinations(range(bucket_size), number_of_bucket_counters)
 table = [combo for combo in table]

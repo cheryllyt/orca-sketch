@@ -12,8 +12,6 @@
 
 #include "salsa-src/BobHash.hpp"
 
-using namespace std;
-
 class ORCASketch {
 
 	int sketch_size;

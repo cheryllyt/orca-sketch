@@ -133,7 +133,7 @@ int zipf(double alpha, int n)
 	double zipf_value;            // Computed exponential value to be returned
 	int    i;                     // Loop counter
 
-	//static double* cdf = new double[n]; // YL: original code from SALSA repo 
+	//static double* cdf = new double[n]; // YL: original code from SALSA repo
 	static double* cdf = new double[n+1]; // YL: edited code
 
 	// Compute normalization constant on first call only

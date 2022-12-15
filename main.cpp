@@ -32,7 +32,7 @@ using namespace std;
 // command to compile on MacBook:
 // ------------------------------
 // g++ -std=c++17 main.cpp ORCAS.cpp ORCASTests.cpp salsa-src/BobHash.cpp -framework Python
-// e.g. ./a.out 10 42 1 32 4 3
+// e.g. ./a.out 10 42 1 32 4 3; ./a.out 10 42 -1 32 4 3
 
 int main(int argc, char* argv[])
 {
@@ -83,19 +83,19 @@ int main(int argc, char* argv[])
     }
     
     // ORCA Sketch driver code
-    ORCASketch orcasketch;
-    orcasketch.initialize(sketch_size, number_of_buckets, number_of_bucket_counters, seed);
+    // ORCASketch orcasketch;
+    // orcasketch.initialize(sketch_size, number_of_buckets, number_of_bucket_counters, seed);
 
-    int64_t stop_loop = N * FT_SIZE;
-	for (int64_t i = 0; i < stop_loop; i += FT_SIZE)
-	{
-		orcasketch.increment(data + i);
-        orcasketch.query(data + i);
-	}
+    // int64_t stop_loop = N * FT_SIZE;
+	// for (int64_t i = 0; i < stop_loop; i += FT_SIZE)
+	// {
+	// 	orcasketch.increment(data + i);
+    //     orcasketch.query(data + i);
+	// }
 
     // ORCA Sketch tests
     test_orcas_error_on_arrival();
-    test_orcas_speed();
+    test_orcas_speed(N, sketch_size, number_of_buckets, number_of_bucket_counters, seed, data);
     cout << "\nTests complete!\n";
 
     return 0;

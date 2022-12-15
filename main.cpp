@@ -32,7 +32,7 @@ using namespace std;
 // command to compile on MacBook:
 // ------------------------------
 // g++ -std=c++17 main.cpp ORCAS.cpp ORCASTests.cpp salsa-src/BobHash.cpp -framework Python
-// e.g. ./a.out 10 42 1 32 4 3; ./a.out 10 42 -1 32 4 3
+// e.g. ./a.out 10 42 1 32 4 3; ./a.out 10000000 42 -1 1024 128 4
 
 int main(int argc, char* argv[])
 {
@@ -92,6 +92,22 @@ int main(int argc, char* argv[])
 	// 	orcasketch.increment(data + i);
     //     orcasketch.query(data + i);
 	// }
+
+    // memory = sketch_size x size of counter (4 bytes - size of integer)
+    // influences -> number_of_buckets & number_of_bucket_counters (hence also number_of_options)
+    // x-axis = memory; y-axis = error (L2) / 
+    // x-axis = memory; speed/throughput (N / time)
+
+    /*
+        possible combinations:
+        sketch_size = 1024
+        number_of_buckets, number_of_bucket_counters: number_of_options
+        - 16, 1:64
+        - 32, 1:32
+        - 64, 1:16
+        - 128, 1:8 / 2:28 / 3:56 / 4:70 / 5:56 / 6:28 / 7:8
+        - 256, 1:4 / 2:6 / 3:4
+    */
 
     // ORCA Sketch tests
     test_orcas_error_on_arrival(N, sketch_size, number_of_buckets, number_of_bucket_counters, seed, data);

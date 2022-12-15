@@ -12,10 +12,14 @@ table = [combo for combo in table]
 
 f = open('lookup_table.txt', 'w')
 
+number_of_options = len(table)
+f.write(str(number_of_options) + '\n')
+
 for combo in table:
     formatted = str(combo)[1:-1].replace(' ', '')
     single = formatted.split(',')
     for s in single:
-      f.write(s + '\n')
+      if s != '':
+        f.write(s + '\n')
 
 f.close()

@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
 	// }
 
     // ORCA Sketch tests
-    test_orcas_error_on_arrival();
+    test_orcas_error_on_arrival(N, sketch_size, number_of_buckets, number_of_bucket_counters, seed, data);
     test_orcas_speed(N, sketch_size, number_of_buckets, number_of_bucket_counters, seed, data);
     cout << "\nTests complete!\n";
 

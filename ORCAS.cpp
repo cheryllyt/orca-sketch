@@ -1,10 +1,3 @@
-#include <Python/Python.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <iostream>
-#include <fstream>
-#include <charconv>
-
 #include "ORCAS.hpp"
 
 #define NUMBER_OF_HASH_FUNC 1

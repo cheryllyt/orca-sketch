@@ -64,7 +64,11 @@ void ORCASketch::increment(const char * str)
     uint bobhash_return = (bobhash.run(str, FT_SIZE));
 
     uint bucket_index = (bobhash_return & LEAST_SIGNIF_10) & bucket_mask;
-    uint option_index = (bobhash_return >> MOST_SIGNIF_10) % option_mask;
+    uint option_index = 0;
+    if (option_mask != 0)
+    {
+        option_index = (bobhash_return >> MOST_SIGNIF_10) % option_mask;
+    }
 
     // cout << "\nbucket_index: " << bucket_index << "\n";
     // cout << "option_index: " << option_index << "\n";
@@ -101,7 +105,11 @@ uint32_t ORCASketch::query(const char * str)
     uint bobhash_return = (bobhash.run(str, FT_SIZE));
 
     uint bucket_index = (bobhash_return & LEAST_SIGNIF_10) & bucket_mask;
-    uint option_index = (bobhash_return >> MOST_SIGNIF_10) % option_mask;
+    uint option_index = 0;
+    if (option_mask != 0)
+    {
+        option_index = (bobhash_return >> MOST_SIGNIF_10) % option_mask;
+    }
 
     // cout << "\nbucket_index: " << bucket_index << "\n";
     // cout << "option_index: " << option_index << "\n";

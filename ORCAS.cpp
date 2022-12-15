@@ -172,8 +172,8 @@ int ORCASketch::get_number_of_lookup_table_options()
 
     string options = "";
 
-    char num;
-    int int_num = 1;
+    char num = '0';
+    int int_num = 0;
 
     while (int_num >= 0)
     {
@@ -181,9 +181,6 @@ int ORCASketch::get_number_of_lookup_table_options()
         num = f.get();
         int_num = num - CHAR_TO_INT_DIFF;
     } // whitespace found
-
-    // remove empty char added when while loop is first entered
-    options = options.substr(1);
 
     return stoi(options);
 }
@@ -203,8 +200,8 @@ int **ORCASketch::create_bucket_counter_lookup_table()
     ifstream f(lookup_table_file_name);
 
     // remove first line of lookup_table.txt
-    char num;
-    int int_num = 1;
+    char num = '0';
+    int int_num = 0;
 
     while (int_num >= 0)
     {

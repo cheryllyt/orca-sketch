@@ -4,6 +4,7 @@
 #define ORCA_SKETCH
 
 #include <Python/Python.h>
+#include <immintrin.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <iostream>
@@ -23,13 +24,13 @@ class ORCASketch {
 
     int number_of_options; 
     int option_mask;
-    int **bucket_counter_lookup_table;
+    __m256i *bucket_counter_lookup_table;
 
     uint32_t *orca_sketch;
     BOBHash bobhash;
 
     int get_number_of_lookup_table_options();
-    int **create_bucket_counter_lookup_table();
+    __m256i *create_bucket_counter_lookup_table();
 
 public:
 

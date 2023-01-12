@@ -27,9 +27,10 @@ void ORCASketch::initialize(int sketch_size, int number_of_buckets, int number_o
     bucket_size = sketch_size / number_of_buckets;
     bucket_mask = number_of_buckets - 1;
 
-    number_of_options = get_number_of_lookup_table_options();
+    set_number_of_lookup_table_options();
     option_mask = number_of_options - 1;
-    bucket_counter_lookup_table = create_bucket_counter_lookup_table();
+    // TODO: change main.cpp, ORCAS.cpp/hpp so that bucket size cannot be changed
+    create_bucket_counter_lookup_table(); // TODO: also create inverse lookup table
 
     // test code for printing - TODO: delete
     // cout << "\n";
@@ -71,6 +72,7 @@ void ORCASketch::increment(const char * str)
 
     uint exact_bucket_index = bucket_size * bucket_index;
 
+    // TODO: try to solve crash bug - find undefined behaviour
     __m256i cons = bucket_counter_lookup_table[option_index];
     __m256i& ptr = *((__m256i*) &orca_sketch[exact_bucket_index]);
     ptr = _mm256_add_epi32(ptr, cons);
@@ -136,7 +138,7 @@ uint32_t ORCASketch::query(const char * str)
     return min;
 }
 
-int ORCASketch::get_number_of_lookup_table_options()
+void ORCASketch::set_number_of_lookup_table_options()
 {
     // run python script to generate lookup table
     char py_file_name[] = "lookup_table.py";
@@ -178,13 +180,13 @@ int ORCASketch::get_number_of_lookup_table_options()
         int_num = num - CHAR_TO_INT_DIFF;
     } // whitespace found
 
-    return stoi(options);
+    number_of_options = stoi(options);
 }
 
 // Lookup table (of counter combinations)
-__m256i *ORCASketch::create_bucket_counter_lookup_table()
+void ORCASketch::create_bucket_counter_lookup_table()
 {
-    __m256i* lookup_table = new __m256i[number_of_options];
+    bucket_counter_lookup_table = new __m256i[number_of_options];
 
     // load combinations into lookup_table
     char lookup_table_file_name[] = "lookup_table.txt";
@@ -210,8 +212,6 @@ __m256i *ORCASketch::create_bucket_counter_lookup_table()
             temp[j] = int_num;
         }
         // assumption that buckets are fixed at size 8
-        lookup_table[i] = _mm256_set_epi32(temp[0], temp[1], temp[2], temp[3], temp[4], temp[5], temp[6], temp[7]);
+        bucket_counter_lookup_table[i] = _mm256_set_epi32(temp[0], temp[1], temp[2], temp[3], temp[4], temp[5], temp[6], temp[7]);
     }
-
-    return lookup_table;
 }

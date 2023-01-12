@@ -29,8 +29,8 @@ class ORCASketch {
     uint32_t *orca_sketch;
     BOBHash bobhash;
 
-    int get_number_of_lookup_table_options();
-    __m256i *create_bucket_counter_lookup_table();
+    void set_number_of_lookup_table_options();
+    void create_bucket_counter_lookup_table();
 
 public:
 

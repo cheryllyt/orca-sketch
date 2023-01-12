@@ -7,6 +7,7 @@
 #include "ORCASTests.hpp"
 
 #define FT_SIZE 13
+#define BUCKET_SIZE 8 // AVX2 available
 
 using namespace std;
 
@@ -32,31 +33,30 @@ using namespace std;
 // command to compile on MacBook:
 // ------------------------------
 // g++ -std=c++17 -mavx2 main.cpp ORCAS.cpp ORCASTests.cpp salsa-src/BobHash.cpp -framework Python
-// e.g. ./a.out 10 42 1 32 4 3; ./a.out 10000000 42 -1 1024 128 4
+// e.g. ./a.out 10 42 1 32 3; ./a.out 10000000 42 -1 1024 4
 
 int main(int argc, char* argv[])
 {
-    if (argc < 7) {
+    if (argc < 6) {
         cout << "Usage Error:\n";
         cout << "argv[1]: int N\n";
         cout << "argv[2]: int seed\n";
         cout << "argv[3]: float alpha\n";
         cout << "argv[4]: int sketch_size\n";
-        cout << "argv[5]: int number_of_buckets\n";
-        cout << "argv[6]: int number_of_bucket_counters\n";
+        cout << "argv[5]: int number_of_bucket_counters\n";
         system("pause");
 		return 0;
     }
 
     // for data generation
     int N = atoi(argv[1]); // largest: 99000000
-    int seed = atoi(argv[2]); // 42
+    int seed = atoi(argv[2]); // e.g. 42
     float alpha = atof(argv[3]); // e.g. 0.6, 0.8, 1, 1.2, 1.5
 
     // for creating ORCA Sketch
     int sketch_size = atoi(argv[4]); // e.g. 32
-    int number_of_buckets = atoi(argv[5]); // e.g. 4
-    int number_of_bucket_counters = atoi(argv[6]); // e.g. 3
+    int number_of_buckets = (int)(sketch_size / BUCKET_SIZE); // bucket size is fixed depending on CPU
+    int number_of_bucket_counters = atoi(argv[5]); // e.g. 3
 
     char path[] = "./zipf";
     char* data = new char[FT_SIZE * N]();

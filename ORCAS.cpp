@@ -29,7 +29,6 @@ void ORCASketch::initialize(int sketch_size, int number_of_buckets, int number_o
 
     set_number_of_lookup_table_options();
     option_mask = number_of_options - 1;
-    // TODO: change main.cpp, ORCAS.cpp/hpp so that bucket size cannot be changed
     create_bucket_counter_lookup_table(); // TODO: also create inverse lookup table
 
     // test code for printing - TODO: delete

@@ -11,29 +11,31 @@
 
 using namespace std;
 
-// no SIMD version
-// ===============
-//
-// data structure:
-// SUMMARY - one row of counters, split into buckets
-// let W = total number of counters (in the row)
-// let B = size of a bucket (in number of counters)
-// therefore, number of buckets = W / B
-// let A = number of counters an item should be mapped into within a bucket
-// therefore, number of options for which A counters within a bucket an item should be mapped into
-//            = number of rows in lookup table (of counter combinations)
-//            = B choose A (combination) 
-//
-// algorithm:
-// 1. Use BobHash (the hash function) on an item -> returns 32 bits
-// 2. Split into 22 bits and 10 (least significant) bits
-// 3. Use the 10 bits to map into a bucket
-// 4. Use the 22 bits to map into a row in the lookup table
+/*
+    no SIMD version
+    ===============
 
-// command to compile on MacBook:
-// ------------------------------
-// g++ -std=c++17 -mavx2 main.cpp ORCAS.cpp ORCASTests.cpp salsa-src/BobHash.cpp -framework Python -DDEBUG
-// e.g. ./a.out 10 42 1 256 3; ./a.out 10000000 42 -1 1024 4
+    data structure:
+    SUMMARY - one row of counters, split into buckets
+    let W = total number of counters (in the row)
+    let B = size of a bucket (in number of counters)
+    therefore, number of buckets = W / B
+    let A = number of counters an item should be mapped into within a bucket
+    therefore, number of options for which A counters within a bucket an item should be mapped into
+             = number of rows in lookup table (of counter combinations)
+             = B choose A (combination) 
+
+    algorithm:
+    1. Use BobHash (the hash function) on an item -> returns 32 bits
+    2. Split into 22 bits and 10 (least significant) bits
+    3. Use the 10 bits to map into a bucket
+    4. Use the 22 bits to map into a row in the lookup table
+
+    command to compile on MacBook:
+    ------------------------------
+    g++ -std=c++17 -mavx2 main.cpp ORCAS.cpp ORCASTests.cpp salsa-src/BobHash.cpp -framework Python -DDEBUG
+    e.g. ./a.out 10 42 1 256 3; ./a.out 10000000 42 -1 1024 4
+*/
 
 int main(int argc, char* argv[])
 {
@@ -53,7 +55,7 @@ int main(int argc, char* argv[])
     int seed = atoi(argv[2]); // e.g. 42
     float alpha = atof(argv[3]); // e.g. 0.6, 0.8, 1, 1.2, 1.5
 
-    // for creating ORCA Sketch
+    // for creating ORCA sketch
     int sketch_size = atoi(argv[4]); // e.g. 32
     int number_of_buckets = (int)(sketch_size / BUCKET_SIZE); // bucket size is fixed depending on CPU
     int number_of_bucket_counters = atoi(argv[5]); // e.g. 3
@@ -82,7 +84,7 @@ int main(int argc, char* argv[])
         read_so_far += to_read;
     }
     
-    // ORCA Sketch driver code
+    #ifdef DEBUG // ORCA sketch driver code
     ORCASketch orcasketch;
     orcasketch.initialize(sketch_size, number_of_buckets, number_of_bucket_counters, seed);
 
@@ -92,27 +94,20 @@ int main(int argc, char* argv[])
 		orcasketch.increment(data + i);
         orcasketch.query(data + i);
 	}
+    #endif
 
     /*
         memory = sketch_size x size of counter (4 bytes - size of integer)
         influences -> number_of_buckets & number_of_bucket_counters (hence also number_of_options)
-        x-axis = memory; y-axis = error (L2) / 
-        x-axis = memory; speed/throughput (N / time)
-
-        possible combinations:
-        sketch_size = 1024
-        number_of_buckets, number_of_bucket_counters: number_of_options
-        - 16, 1:64
-        - 32, 1:32
-        - 64, 1:16
-        - 128, 1:8 / 2:28 / 3:56 / 4:70 / 5:56 / 6:28 / 7:8
-        - 256, 1:4 / 2:6 / 3:4
+        (1) x-axis = memory; y-axis = error (L2)
+        (2) x-axis = memory; y-axis = speed/throughput (N / time)
     */
 
-    // ORCA Sketch tests
-    // test_orcas_error_on_arrival(N, sketch_size, number_of_buckets, number_of_bucket_counters, seed, data);
-    // test_orcas_speed(N, sketch_size, number_of_buckets, number_of_bucket_counters, seed, data);
-    // cout << "\nTests complete!\n";
+    #ifndef DEBUG // ORCA sketch tests
+    test_orcas_error_on_arrival(N, sketch_size, number_of_buckets, number_of_bucket_counters, seed, data);
+    test_orcas_speed(N, sketch_size, number_of_buckets, number_of_bucket_counters, seed, data);
+    cout << "\nTests complete!\n";
+    #endif
 
     return 0;
 }

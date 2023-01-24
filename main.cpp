@@ -33,7 +33,7 @@ using namespace std;
 // command to compile on MacBook:
 // ------------------------------
 // g++ -std=c++17 -mavx2 main.cpp ORCAS.cpp ORCASTests.cpp salsa-src/BobHash.cpp -framework Python
-// e.g. ./a.out 10 42 1 32 3; ./a.out 10000000 42 -1 1024 4
+// e.g. ./a.out 10 42 1 256 3; ./a.out 10000000 42 -1 1024 4
 
 int main(int argc, char* argv[])
 {

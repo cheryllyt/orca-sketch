@@ -20,4 +20,13 @@ for combo in table:
   formatted = str(vector)[1:-1].replace(', ', '')
   f.write(formatted)
 
+f.write("\n")
+
+for combo in table:
+  formatted = str(combo)[1:-1].replace(' ', '')
+  single = formatted.split(',')
+  for s in single:
+    if s != '':
+      f.write(s + '\n')
+
 f.close()

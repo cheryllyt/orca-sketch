@@ -16,10 +16,17 @@ number_of_options = len(table)
 f.write(str(number_of_options) + '\n')
 
 for combo in table:
-    formatted = str(combo)[1:-1].replace(' ', '')
-    single = formatted.split(',')
-    for s in single:
-      if s != '':
-        f.write(s + '\n')
+  vector = [1 if i in combo else 0 for i in range(bucket_size)]
+  formatted = str(vector)[1:-1].replace(', ', '')
+  f.write(formatted)
+
+f.write("\n")
+
+for combo in table:
+  formatted = str(combo)[1:-1].replace(' ', '')
+  single = formatted.split(',')
+  for s in single:
+    if s != '':
+      f.write(s + '\n')
 
 f.close()

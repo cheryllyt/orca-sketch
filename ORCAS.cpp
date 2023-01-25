@@ -14,11 +14,8 @@ ORCASketch::ORCASketch()
 
 ORCASketch::~ORCASketch()
 {
-    for (int i = 0; i < number_of_options; ++i)
-	{
-		delete[] bucket_counter_lookup_table[i];
-	}
-    delete[] bucket_counter_lookup_table;
+    delete[] bucket_counter_vec_lookup_table;
+    delete[] bucket_counter_ind_lookup_table;
     delete[] orca_sketch;
 }
 
@@ -31,28 +28,41 @@ void ORCASketch::initialize(int sketch_size, int number_of_buckets, int number_o
     bucket_size = sketch_size / number_of_buckets;
     bucket_mask = number_of_buckets - 1;
 
-    number_of_options = get_number_of_lookup_table_options();
+    set_number_of_lookup_table_options();
     option_mask = number_of_options - 1;
-    bucket_counter_lookup_table = create_bucket_counter_lookup_table();
+    create_lookup_tables();
 
-    // test code for printing - TODO: delete
-    // cout << "\n";
-    // for (int i = 0; i < number_of_options; i++)
-    // {
-    //     for (int j = 0; j < number_of_bucket_counters; j++)
-    //     {
-    //         cout << bucket_counter_lookup_table[i][j] << " ";
-    //     }
-    //     cout << "\n";
-    // }
+    #ifdef DEBUG
+    cout << "\n";
+    for (int i = 0; i < number_of_options; i++)
+    {
+        int temp[bucket_size];
+        _mm256_storeu_si256((__m256i*) temp, bucket_counter_vec_lookup_table[i]);
+        for (int j = 0; j < bucket_size; j++)
+        {
+            cout << temp[j] << " ";
+        }
+        cout << "\n";
+    }
 
-    // cout << "\nsketch_size: " << sketch_size << "\n";
-    // cout << "number_of_buckets: " << number_of_buckets << "\n";
-    // cout << "bucket_mask: " << bucket_mask << "\n";
-    // cout << "bucket_size: " << bucket_size << "\n";
-    // cout << "number_of_bucket_counters: " << number_of_bucket_counters << "\n";
-    // cout << "number_of_options: " << number_of_options << "\n";
-    // cout << "option_mask: " << option_mask << "\n";
+    cout << "\n";
+    for (int k = 0; k < (number_of_options * number_of_bucket_counters); k++)
+    {
+        cout << (int) bucket_counter_ind_lookup_table[k] << " ";
+        if ((k + 1) % number_of_bucket_counters == 0)
+        {
+            cout << "\n";
+        }
+    }
+
+    cout << "\nsketch_size: " << sketch_size << "\n";
+    cout << "number_of_buckets: " << number_of_buckets << "\n";
+    cout << "bucket_mask: " << bucket_mask << "\n";
+    cout << "bucket_size: " << bucket_size << "\n";
+    cout << "number_of_bucket_counters: " << number_of_bucket_counters << "\n";
+    cout << "number_of_options: " << number_of_options << "\n";
+    cout << "option_mask: " << option_mask << "\n";
+    #endif
 
     orca_sketch = new uint32_t[sketch_size]();
 
@@ -70,34 +80,29 @@ void ORCASketch::increment(const char * str)
         option_index = (bobhash_return >> MOST_SIGNIF_10) % option_mask;
     }
 
-    // cout << "\nbucket_index: " << bucket_index << "\n";
-    // cout << "option_index: " << option_index << "\n";
+    #ifdef DEBUG
+    cout << "\nbucket_index: " << bucket_index << "\n";
+    cout << "option_index: " << option_index << "\n";
+    #endif
 
     uint exact_bucket_index = bucket_size * bucket_index;
-    for (int i = 0; i < number_of_bucket_counters; i++)
+
+    __m256i counter_vec = bucket_counter_vec_lookup_table[option_index];
+    __m256i& orca_ptr = *((__m256i*) &orca_sketch[exact_bucket_index]);
+    orca_ptr = _mm256_add_epi32(orca_ptr, counter_vec);
+
+    #ifdef DEBUG
+    cout << "\norca_sketch: ";
+    for (int j = 0; j < sketch_size; j++)
     {
-        int counter_index = bucket_counter_lookup_table[option_index][i];
-
-        // calculate exact index in ORCASketch to increment
-        int sketch_index = exact_bucket_index + counter_index;
-
-        // cout << "counter_index " << i << ": " << counter_index << "\n";
-        // cout << "sketch_index: " << sketch_index << "\n";
-
-        orca_sketch[sketch_index]++;
+        if (j % bucket_size == 0)
+        {
+            cout << "| ";
+        }
+        cout << orca_sketch[j] << " ";
     }
-
-    // test code for printing - TODO: delete
-    // cout << "\norca_sketch: ";
-    // for (int j = 0; j < sketch_size; j++)
-    // {
-    //     if (j % bucket_size == 0)
-    //     {
-    //         cout << "| ";
-    //     }
-    //     cout << orca_sketch[j] << " ";
-    // }
-    // cout << "\n";
+    cout << "\n";
+    #endif
 }
 
 uint32_t ORCASketch::query(const char * str)
@@ -111,15 +116,21 @@ uint32_t ORCASketch::query(const char * str)
         option_index = (bobhash_return >> MOST_SIGNIF_10) % option_mask;
     }
 
-    // cout << "\nbucket_index: " << bucket_index << "\n";
-    // cout << "option_index: " << option_index << "\n";
+    uint exact_bucket_index = bucket_size * bucket_index;
+    uint start_option_index = option_index * number_of_bucket_counters;
+
+    #ifdef DEBUG
+    cout << "\nbucket_index: " << bucket_index << "\n";
+    cout << "option_index: " << option_index << "\n";
+    cout << "exact_bucket_index: " << exact_bucket_index << "\n";
+    cout << "start_option_index: " << start_option_index << "\n";
+    #endif
 
     uint32_t min = UINT32_MAX;
 
-    uint exact_bucket_index = bucket_size * bucket_index;
     for (int i = 0; i < number_of_bucket_counters; i++)
     {
-        int counter_index = bucket_counter_lookup_table[option_index][i];
+        int counter_index = bucket_counter_ind_lookup_table[start_option_index + i];
         int sketch_index = exact_bucket_index + counter_index;
 
         uint32_t counter_value = orca_sketch[sketch_index];
@@ -128,27 +139,30 @@ uint32_t ORCASketch::query(const char * str)
             min = counter_value;
         }
 
-        // cout << "counter_index " << i << ": " << counter_index << "\n";
-        // cout << "counter_value: " << counter_value << "\n";
+        #ifdef DEBUG
+        cout << "counter_index " << i << ": " << counter_index << "\n";
+        cout << "counter_value: " << counter_value << "\n";
+        #endif
     }
 
-    // test code for printing - TODO: delete
-    // cout << "\norca_sketch for query: ";
-    // for (int j = 0; j < sketch_size; j++)
-    // {
-    //     if (j % bucket_size == 0)
-    //     {
-    //         cout << "| ";
-    //     }
-    //     cout << orca_sketch[j] << " ";
-    // }
-    // cout << "\n";
-    // cout << "min: " << min << "\n";
+    #ifdef DEBUG
+    cout << "\norca_sketch for query: ";
+    for (int j = 0; j < sketch_size; j++)
+    {
+        if (j % bucket_size == 0)
+        {
+            cout << "| ";
+        }
+        cout << orca_sketch[j] << " ";
+    }
+    cout << "\n";
+    cout << "min: " << min << "\n";
+    #endif
 
     return min;
 }
 
-int ORCASketch::get_number_of_lookup_table_options()
+void ORCASketch::set_number_of_lookup_table_options()
 {
     // run python script to generate lookup table
     char py_file_name[] = "lookup_table.py";
@@ -190,20 +204,18 @@ int ORCASketch::get_number_of_lookup_table_options()
         int_num = num - CHAR_TO_INT_DIFF;
     } // whitespace found
 
-    return stoi(options);
+    number_of_options = stoi(options);
 }
 
 // Lookup table (of counter combinations)
-int **ORCASketch::create_bucket_counter_lookup_table()
+void ORCASketch::create_lookup_tables()
 {
-    int** lookup_table = new int*[number_of_options];
+    int ind_lookup_table_len = number_of_options * number_of_bucket_counters;
+    
+    bucket_counter_vec_lookup_table = new __m256i[number_of_options];
+    bucket_counter_ind_lookup_table = new uint8_t[ind_lookup_table_len];
 
-    for (int i = 0; i < number_of_options; i++)
-    {
-        lookup_table[i] = new int[number_of_bucket_counters]();
-    }
-
-    // load combinations into lookup_table
+    // load combinations into lookup tables
     char lookup_table_file_name[] = "lookup_table.txt";
     ifstream f(lookup_table_file_name);
 
@@ -217,28 +229,45 @@ int **ORCASketch::create_bucket_counter_lookup_table()
         int_num = num - CHAR_TO_INT_DIFF;
     } // whitespace found
 
+    // load vector lookup table
     for (int i = 0; i < number_of_options; i++)
     {
-        for (int j = 0; j < number_of_bucket_counters; j++)
+        int temp[bucket_size];
+        for (int j = 0; j < bucket_size; j++)
         {
-            string index = "";
-
-            while (int_num < 0) // ignore whitespace
-            {
-                num = f.get();
-                int_num = num - CHAR_TO_INT_DIFF;
-            } // non-whitespace found
-
-            while (int_num >= 0)
-            {
-                index = index + num;
-                num = f.get();
-                int_num = num - CHAR_TO_INT_DIFF;
-            } // whitespace found; end of index
-
-            lookup_table[i][j] = stoi(index);
+            num = f.get();
+            int_num = num - CHAR_TO_INT_DIFF;
+            temp[j] = int_num;
         }
+        // assumption that buckets are fixed at size 8
+        bucket_counter_vec_lookup_table[i] = _mm256_set_epi32(temp[7], temp[6], temp[5], temp[4],
+                                                              temp[3], temp[2], temp[1], temp[0]);
     }
 
-    return lookup_table;
+    while (int_num >= 0)
+    {
+        num = f.get();
+        int_num = num - CHAR_TO_INT_DIFF;
+    } // whitespace found
+
+    // load index lookup table
+    for (int k = 0; k < ind_lookup_table_len; k++)
+    {
+        while (int_num < 0) // ignore whitespace
+        {
+            num = f.get();
+            int_num = num - CHAR_TO_INT_DIFF;
+        } // non-whitespace found
+
+        string index = "";
+
+        while (int_num >= 0)
+        {
+            index = index + num;
+            num = f.get();
+            int_num = num - CHAR_TO_INT_DIFF;
+        } // whitespace found; end of index
+
+        bucket_counter_ind_lookup_table[k] = stoi(index);
+    }
 }

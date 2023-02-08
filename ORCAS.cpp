@@ -1,8 +1,5 @@
 #include "ORCAS.hpp"
 
-#define NUMBER_OF_HASH_FUNC 1
-#define LEAST_SIGNIF_10 1023
-#define MOST_SIGNIF_10 10
 #define CHAR_TO_INT_DIFF 48
 #define FT_SIZE 13
 
@@ -25,14 +22,26 @@ void ORCASketch::initialize(int sketch_size, int number_of_buckets, int number_o
     this->number_of_buckets = number_of_buckets;
     this->number_of_bucket_counters = number_of_bucket_counters;
 
+    // fixed assumption that number_of_buckets is power of 2
+    assert((number_of_buckets > 0) && ((number_of_buckets & (number_of_buckets - 1)) == 0));
+    number_of_bits_bucket = __builtin_ctz(number_of_buckets);
+
     bucket_size = sketch_size / number_of_buckets;
     bucket_mask = number_of_buckets - 1;
 
     set_number_of_lookup_table_options();
-    option_mask = number_of_options - 1;
+    number_of_options_ind = number_of_options - 1;
     create_lookup_tables();
 
     #ifdef DEBUG
+    cout << "\nsketch_size: " << sketch_size << "\n";
+    cout << "number_of_buckets: " << number_of_buckets << "\n";
+    cout << "bucket_mask: " << bucket_mask << "\n";
+    cout << "bucket_size: " << bucket_size << "\n";
+    cout << "number_of_bucket_counters: " << number_of_bucket_counters << "\n";
+    cout << "number_of_options: " << number_of_options << "\n";
+    cout << "number_of_options_ind: " << number_of_options_ind << "\n";
+    
     cout << "\n";
     for (int i = 0; i < number_of_options; i++)
     {
@@ -42,7 +51,7 @@ void ORCASketch::initialize(int sketch_size, int number_of_buckets, int number_o
         {
             cout << temp[j] << " ";
         }
-        cout << "\n";
+        cout << ": " << i << "\n";
     }
 
     cout << "\n";
@@ -54,14 +63,6 @@ void ORCASketch::initialize(int sketch_size, int number_of_buckets, int number_o
             cout << "\n";
         }
     }
-
-    cout << "\nsketch_size: " << sketch_size << "\n";
-    cout << "number_of_buckets: " << number_of_buckets << "\n";
-    cout << "bucket_mask: " << bucket_mask << "\n";
-    cout << "bucket_size: " << bucket_size << "\n";
-    cout << "number_of_bucket_counters: " << number_of_bucket_counters << "\n";
-    cout << "number_of_options: " << number_of_options << "\n";
-    cout << "option_mask: " << option_mask << "\n";
     #endif
 
     orca_sketch = new uint32_t[sketch_size]();
@@ -73,11 +74,11 @@ void ORCASketch::increment(const char * str)
 {
     uint bobhash_return = (bobhash.run(str, FT_SIZE));
 
-    uint bucket_index = (bobhash_return & LEAST_SIGNIF_10) & bucket_mask;
+    uint bucket_index = bobhash_return & bucket_mask;
     uint option_index = 0;
-    if (option_mask != 0)
+    if (number_of_options_ind != 0)
     {
-        option_index = (bobhash_return >> MOST_SIGNIF_10) % option_mask;
+        option_index = (bobhash_return >> number_of_bits_bucket) % number_of_options_ind;
     }
 
     #ifdef DEBUG
@@ -109,11 +110,11 @@ uint32_t ORCASketch::query(const char * str)
 {
     uint bobhash_return = (bobhash.run(str, FT_SIZE));
 
-    uint bucket_index = (bobhash_return & LEAST_SIGNIF_10) & bucket_mask;
+    uint bucket_index = bobhash_return & bucket_mask;
     uint option_index = 0;
-    if (option_mask != 0)
+    if (number_of_options_ind != 0)
     {
-        option_index = (bobhash_return >> MOST_SIGNIF_10) % option_mask;
+        option_index = (bobhash_return >> number_of_bits_bucket) % number_of_options_ind;
     }
 
     uint exact_bucket_index = bucket_size * bucket_index;

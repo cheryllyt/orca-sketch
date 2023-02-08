@@ -6,6 +6,7 @@
 #include <Python/Python.h>
 #include <smmintrin.h>
 #include <immintrin.h>
+#include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <iostream>
@@ -20,11 +21,14 @@ class ORCASketch {
 	int number_of_buckets;
     int number_of_bucket_counters;
 
+    int number_of_bits_bucket; // number of bits required to store bucket number
+
     int bucket_size;
     int bucket_mask;
 
-    int number_of_options; 
-    int option_mask;
+    int number_of_options;
+    int number_of_options_ind; // max index for lookup table
+    
     __m256i *bucket_counter_vec_lookup_table;
     uint8_t *bucket_counter_ind_lookup_table;
 

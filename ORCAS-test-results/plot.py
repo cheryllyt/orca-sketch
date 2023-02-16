@@ -143,7 +143,7 @@ def plot_speed_and_error(alpha:float, mode:int, fixed_bucket_counter=None, fixed
             error_y = [l2 for (sketch_size, l2) in size_error_dict[bucket_size]]
             error_ax.plot(error_x, error_y, label=str(bucket_size)+' array size')
 
-    fig_title = 'alpha = ' + str(alpha) + ' | fixed '
+    fig_title = 'N = 10000000 | alpha = ' + str(alpha) + ' | fixed '
     if fixed_bucket_counter is not None:
         fig_title = fig_title + 'array counter = ' + str(fixed_bucket_counter)
     elif fixed_bucket_size is not None:

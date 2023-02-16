@@ -10,6 +10,7 @@
 
 using namespace std;
 
+// test referenced from: https://github.com/SALSA-ICDE2021/SALSA
 void test_orcas_error_on_arrival(int N, int sketch_size, int number_of_buckets, int number_of_bucket_counters, int seed, const char* data)
 {
     ORCASketch orca_sketch;
@@ -62,6 +63,7 @@ void test_orcas_error_on_arrival(int N, int sketch_size, int number_of_buckets, 
                  << endl;
 }
 
+// test referenced from: https://github.com/SALSA-ICDE2021/SALSA
 void test_orcas_speed(int N, int sketch_size, int number_of_buckets, int number_of_bucket_counters, int seed, const char* data)
 {
     ORCASketch orca_sketch;

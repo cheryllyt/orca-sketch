@@ -34,12 +34,12 @@ def get_all_values(speed_data, error_data, fixed_bucket_counter=None, fixed_buck
         bucket_size = sketch_size / n_buckets
         speed = N / time
 
-        if (n_buc_counters in count_speed_dict) and (bucket_size == fixed_bucket_size or bucket_size == None):
+        if (n_buc_counters in count_speed_dict) and (bucket_size == fixed_bucket_size):
             if sketch_size not in count_speed_dict[n_buc_counters]:
                 count_speed_dict[n_buc_counters][sketch_size] = []
             count_speed_dict[n_buc_counters][sketch_size].append(speed)
 
-        if (bucket_size in size_speed_dict) and (n_buc_counters == fixed_bucket_counter or n_buc_counters == None):
+        if (bucket_size in size_speed_dict) and (n_buc_counters == fixed_bucket_counter):
             if sketch_size not in size_speed_dict[bucket_size]:
                 size_speed_dict[bucket_size][sketch_size] = []
             size_speed_dict[bucket_size][sketch_size].append(speed)
@@ -53,12 +53,12 @@ def get_all_values(speed_data, error_data, fixed_bucket_counter=None, fixed_buck
 
         bucket_size = sketch_size / n_buckets
 
-        if (n_buc_counters in count_error_dict) and (bucket_size == fixed_bucket_size or bucket_size == None):
+        if (n_buc_counters in count_error_dict) and (bucket_size == fixed_bucket_size):
             if sketch_size not in count_error_dict[n_buc_counters]:
                 count_error_dict[n_buc_counters][sketch_size] = []
             count_error_dict[n_buc_counters][sketch_size].append(l2)
         
-        if (bucket_size in size_error_dict) and (n_buc_counters == fixed_bucket_counter or n_buc_counters == None):
+        if (bucket_size in size_error_dict) and (n_buc_counters == fixed_bucket_counter):
             if sketch_size not in size_error_dict[bucket_size]:
                 size_error_dict[bucket_size][sketch_size] = []
             size_error_dict[bucket_size][sketch_size].append(l2)

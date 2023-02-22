@@ -1,7 +1,7 @@
+import os
 import matplotlib.pyplot as plt
 import statistics
 
-ALPHA_TITLE = 'Alpha: '
 ROW_NUMBERS = [1,2,3,4,6,10]
 
 def get_all_values(speed_data, error_data):
@@ -62,11 +62,18 @@ def plot_speed_and_error(alpha:float):
 
     # alpha must be 3 char (1 digit before '.' and 1 digit after)
     alpha_str = str(alpha)[0] + '-' + str(alpha)[-1]
+    alpha_folder_name = 'alpha_' + alpha_str + '/'
 
-    folder_name = 'seed_1_2_3_4_5/'
+    speed_data = []
+    error_data = []
 
-    speed_data = open(folder_name + 'alpha_' + alpha_str + '_speed.txt').readlines()
-    error_data = open(folder_name + 'alpha_' + alpha_str + '_error.txt').readlines()
+    # e.g. alpha_1-0/test_baseline_cms_error_on_arrival_seed_1.txt
+    for fn in os.listdir(alpha_folder_name):
+        indiv_data = open(alpha_folder_name + fn).readlines()
+        if 'speed' in fn:
+            speed_data = speed_data + indiv_data
+        elif 'error_on_arrival' in fn:
+            error_data = error_data + indiv_data
 
     speed_dict_all, error_dict_all = get_all_values(speed_data, error_data)
     speed_dict, error_dict = get_median(speed_dict_all, error_dict_all)
@@ -82,23 +89,26 @@ def plot_speed_and_error(alpha:float):
         error_y = [l2 for (w, l2) in error_dict[r]]
         error_ax.plot(error_x, error_y, label=str(r)+' rows')
 
+    N = speed_data[0].split('\t')[1]
+    fig_title = 'N = ' + N + ' | alpha = ' + str(alpha)
+    fig.suptitle(fig_title, fontsize=18)
+
     speed_ax.set_xlabel('Memory [KB]', fontsize=18)
     speed_ax.set_ylabel('Throughput [Mops]', fontsize=18)
     speed_ax.tick_params(axis='both', which='both', labelsize=15)
     speed_ax.set_xscale('log',base=10)
-    speed_ax.legend(loc="upper right", prop={"size":12})
+    speed_ax.legend(loc="upper right", prop={"size":11})
 
     error_ax.set_xlabel('Memory [KB]', fontsize=18)
     error_ax.set_ylabel('L2 Error', fontsize=18)
     error_ax.tick_params(axis='both', which='both', labelsize=15)
     error_ax.set_xscale('log',base=10)
     error_ax.set_yscale('log',base=10)
-    error_ax.legend(loc="upper right", prop={"size":12})
+    error_ax.legend(loc="upper right", prop={"size":11})
 
 def plot_all_alpha():
     
-    plot_speed_and_error(0.8)
-    plot_speed_and_error(1.5)
+    plot_speed_and_error(1.0)
     
     plt.show()
 

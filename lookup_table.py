@@ -24,9 +24,6 @@ f.write("\n")
 
 for combo in table:
   formatted = str(combo)[1:-1].replace(' ', '')
-  single = formatted.split(',')
-  for s in single:
-    if s != '':
-      f.write(s + '\n')
+  f.write(formatted + ',')
 
 f.close()

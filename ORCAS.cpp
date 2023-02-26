@@ -254,11 +254,11 @@ void ORCASketch::create_lookup_tables()
     // load index lookup table
     for (int k = 0; k < ind_lookup_table_len; k++)
     {
-        while (int_num < 0) // ignore whitespace
+        while (int_num < 0) // ignore non-integer
         {
             num = f.get();
             int_num = num - CHAR_TO_INT_DIFF;
-        } // non-whitespace found
+        } // integer found
 
         string index = "";
 
@@ -267,7 +267,7 @@ void ORCASketch::create_lookup_tables()
             index = index + num;
             num = f.get();
             int_num = num - CHAR_TO_INT_DIFF;
-        } // whitespace found; end of index
+        } // non-integer found; end of index
 
         bucket_counter_ind_lookup_table[k] = stoi(index);
     }

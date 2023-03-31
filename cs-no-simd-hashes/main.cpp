@@ -76,47 +76,45 @@ int main(int argc, char* argv[])
         genzipf(path, seed, alpha, 1 << 24, N);
         cout << "\nzipf generation complete!\n";
     }
-    else
+    
+    // read zipf contents into data[]
+    int64_t remaining = N;
+    int read_so_far = 0;
+
+    ifstream f(path, ios::binary);
+
+    while (remaining > 0)
     {
-        // read zipf contents into data[]
-        int64_t remaining = N;
-        int read_so_far = 0;
-
-        ifstream f(path, ios::binary);
-
-        while (remaining > 0)
-        {
-            int64_t to_read = remaining > 100000 ? 100000 : remaining;
-            f.read(data + read_so_far * FT_SIZE, to_read * FT_SIZE);
-            remaining -= to_read;
-            read_so_far += to_read;
-        }
-        
-        #ifdef DEBUG // ORCA sketch driver code
-        ORCASketch orcasketch;
-        orcasketch.initialize(sketch_size, number_of_buckets, number_of_bucket_counters, seed);
-
-        int64_t stop_loop = N * FT_SIZE;
-        for (int64_t i = 0; i < stop_loop; i += FT_SIZE)
-        {
-            orcasketch.increment(data + i);
-            orcasketch.query(data + i);
-        }
-        #endif
-
-        /*
-            memory = sketch_size x size of counter (4 bytes - size of integer)
-            influences -> number_of_buckets & number_of_bucket_counters (hence also number_of_options)
-            (1) x-axis = memory; y-axis = error (L2)
-            (2) x-axis = memory; y-axis = speed/throughput (N / time)
-        */
-
-        #ifndef DEBUG // ORCA sketch tests
-        test_orcas_error_on_arrival(N, sketch_size, number_of_buckets, number_of_bucket_counters, seed, data);
-        test_orcas_speed(N, sketch_size, number_of_buckets, number_of_bucket_counters, seed, data);
-        cout << "\nTests complete!\n";
-        #endif
+        int64_t to_read = remaining > 100000 ? 100000 : remaining;
+        f.read(data + read_so_far * FT_SIZE, to_read * FT_SIZE);
+        remaining -= to_read;
+        read_so_far += to_read;
     }
     
+    #ifdef DEBUG // ORCA sketch driver code
+    ORCASketch orcasketch;
+    orcasketch.initialize(sketch_size, number_of_buckets, number_of_bucket_counters, seed);
+
+    int64_t stop_loop = N * FT_SIZE;
+    for (int64_t i = 0; i < stop_loop; i += FT_SIZE)
+    {
+        orcasketch.increment(data + i);
+        orcasketch.query(data + i);
+    }
+    #endif
+
+    /*
+        memory = sketch_size x size of counter (4 bytes - size of integer)
+        influences -> number_of_buckets & number_of_bucket_counters (hence also number_of_options)
+        (1) x-axis = memory; y-axis = error (L2)
+        (2) x-axis = memory; y-axis = speed/throughput (N / time)
+    */
+
+    #ifndef DEBUG // ORCA sketch tests
+    test_orcas_error_on_arrival(N, sketch_size, number_of_buckets, number_of_bucket_counters, seed, data);
+    test_orcas_speed(N, sketch_size, number_of_buckets, number_of_bucket_counters, seed, data);
+    cout << "\nTests complete!\n";
+    #endif
+
     return 0;
 }

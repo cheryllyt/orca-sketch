@@ -30,6 +30,10 @@ void ORCASketch::initialize(int sketch_size, int number_of_buckets, int number_o
     bucket_size = sketch_size / number_of_buckets;
     bucket_mask = number_of_buckets - 1;
 
+    // fixed assumption that bucket_size is power of 2
+    assert((bucket_size > 0) && ((bucket_size & (bucket_size - 1)) == 0));
+    number_of_bits_bucket_size = __builtin_ctz(bucket_size);
+
     set_number_of_lookup_table_options();
     number_of_options_ind = number_of_options - 1;
     create_lookup_tables();
@@ -87,7 +91,7 @@ void ORCASketch::increment(const char * str)
     cout << "option_index: " << option_index << "\n";
     #endif
 
-    uint exact_bucket_index = bucket_size * bucket_index;
+    uint exact_bucket_index = bucket_index << number_of_bits_bucket_size;
 
     __m256i counter_vec = bucket_counter_vec_lookup_table[option_index];
     __m256i& orca_ptr = *((__m256i*) &orca_sketch[exact_bucket_index]);
@@ -118,7 +122,7 @@ uint32_t ORCASketch::query(const char * str)
         option_index = (bobhash_return >> number_of_bits_bucket) % number_of_options_ind;
     }
 
-    uint exact_bucket_index = bucket_size * bucket_index;
+    uint exact_bucket_index = bucket_index << number_of_bits_bucket_size;
     uint start_option_index = option_index * number_of_bucket_counters;
 
     #ifdef DEBUG

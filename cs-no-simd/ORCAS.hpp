@@ -24,6 +24,8 @@ class ORCASketch {
     int bucket_size;
     int bucket_mask;
 
+    int number_of_bits_bucket_size; // number of bits required to store bucket size
+
     int number_of_options;
     int number_of_options_ind; // max index for lookup table
     

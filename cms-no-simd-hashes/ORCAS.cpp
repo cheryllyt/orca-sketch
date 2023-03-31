@@ -26,6 +26,10 @@ void ORCASketch::initialize(int sketch_size, int number_of_buckets, int number_o
     bucket_number_mask = number_of_buckets - 1;
     bucket_counter_mask = bucket_size - 1;
 
+    // fixed assumption that bucket_size is power of 2
+    assert((bucket_size > 0) && ((bucket_size & (bucket_size - 1)) == 0));
+    number_of_bits_bucket_size = __builtin_ctz(bucket_size);
+
     number_of_hash_functions = number_of_bucket_counters + 1;
 
     #ifdef DEBUG
@@ -50,7 +54,7 @@ void ORCASketch::initialize(int sketch_size, int number_of_buckets, int number_o
 void ORCASketch::increment(const char * str)
 {
     uint bucket_index = (bobhash[BUCKET_HASH].run(str, FT_SIZE)) & bucket_number_mask;
-    uint exact_bucket_index = bucket_size * bucket_index;
+    uint exact_bucket_index = bucket_index << number_of_bits_bucket_size;
 
     #ifdef DEBUG
     cout << "\nbucket_index: " << bucket_index << "\n";
@@ -87,7 +91,7 @@ void ORCASketch::increment(const char * str)
 uint32_t ORCASketch::query(const char * str)
 {
     uint bucket_index = (bobhash[BUCKET_HASH].run(str, FT_SIZE)) & bucket_number_mask;
-    uint exact_bucket_index = bucket_size * bucket_index;
+    uint exact_bucket_index = bucket_index << number_of_bits_bucket_size;
 
     #ifdef DEBUG
     cout << "\nbucket_index: " << bucket_index << "\n";

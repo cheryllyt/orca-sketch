@@ -21,6 +21,8 @@ class ORCASketch {
     int bucket_number_mask;
     int bucket_counter_mask;
 
+    int number_of_bits_bucket_size; // number of bits required to store bucket size
+
     int number_of_hash_functions;
 
     uint32_t *orca_sketch;

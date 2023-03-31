@@ -169,7 +169,7 @@ def plot_speed_and_error(alpha:float, mode:int, fixed_bucket_counter=None, fixed
 def plot_all_alpha():
 
     plot_speed_and_error(1.0, COUNTERS_MODE, fixed_bucket_size=8) # fix bucket_size at 8 when plotting different bucket_counter
-    # plot_speed_and_error(1.0, SIZE_MODE, fixed_bucket_counter=3) # fix bucket_counter at 2 when plotting different bucket_size
+    # plot_speed_and_error(1.0, SIZE_MODE, fixed_bucket_counter=3) # fix bucket_counter at 3 when plotting different bucket_size
     
     plt.show()
 

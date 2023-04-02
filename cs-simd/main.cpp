@@ -112,6 +112,7 @@ int main(int argc, char* argv[])
     #ifndef DEBUG // ORCA sketch tests
     test_orcas_error_on_arrival(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
     test_orcas_speed(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+    test_orcas_final_error(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
     cout << "\nTests complete!\n";
     #endif
 

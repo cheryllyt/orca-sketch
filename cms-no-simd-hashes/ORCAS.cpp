@@ -60,17 +60,38 @@ void ORCASketch::increment(const char * str)
     cout << "\nbucket_index: " << bucket_index << "\n";
     cout << "exact_bucket_index: " << exact_bucket_index << "\n";
     #endif
+
+    int temp_bucket_counter_row_mask = bucket_counter_mask;
+
+    int remaining_bucket_counters[bucket_size];
+    for (int c = 0; c < bucket_size; c++)
+    {
+        remaining_bucket_counters[c] = c;
+    }
     
     for (int i = COUNTER_HASH; i < number_of_hash_functions; i++)
     {
-        uint bucket_counter_index = (bobhash[i].run(str, FT_SIZE)) & bucket_counter_mask;
-        int sketch_index = exact_bucket_index + bucket_counter_index; // calculate exact index in ORCASketch to increment
+        uint bucket_counter_index_row = (bobhash[i].run(str, FT_SIZE)) & temp_bucket_counter_row_mask;
+        uint bucket_counter_index = remaining_bucket_counters[bucket_counter_index_row];
         
-        orca_sketch[sketch_index]++;
+        orca_sketch[exact_bucket_index + bucket_counter_index]++; // sketch index
+
+        // reassign counters to a new row
+        for (int n = bucket_counter_index_row; n < temp_bucket_counter_row_mask; n++)
+        {
+            remaining_bucket_counters[n] = remaining_bucket_counters[n + 1];
+        }
+        temp_bucket_counter_row_mask -= 1;
 
         #ifdef DEBUG
+        cout << "bucket_counter_index_row " << i << ": " << bucket_counter_index_row << "\n";
         cout << "bucket_counter_index: " << bucket_counter_index << "\n";
-        cout << "sketch_index: " << sketch_index << "\n";
+        cout << "remaining_bucket_counters: ";
+        for (int i = 0; i < bucket_size; i++)
+        {
+            cout << remaining_bucket_counters[i] << " ";
+        }
+        cout << "\n";
         #endif
     }
 
@@ -98,22 +119,43 @@ uint32_t ORCASketch::query(const char * str)
     cout << "exact_bucket_index: " << exact_bucket_index << "\n";
     #endif
 
+    int temp_bucket_counter_row_mask = bucket_counter_mask;
+
+    int remaining_bucket_counters[bucket_size];
+    for (int c = 0; c < bucket_size; c++)
+    {
+        remaining_bucket_counters[c] = c;
+    }
+
     uint32_t min = UINT32_MAX;
     
     for (int i = COUNTER_HASH; i < number_of_hash_functions; i++)
     {
-        uint bucket_counter_index = (bobhash[i].run(str, FT_SIZE)) & bucket_counter_mask;
-        int sketch_index = exact_bucket_index + bucket_counter_index; // calculate exact index in ORCASketch to increment
+        uint bucket_counter_index_row = (bobhash[i].run(str, FT_SIZE)) & temp_bucket_counter_row_mask;
+        uint bucket_counter_index = remaining_bucket_counters[bucket_counter_index_row];
         
-        uint32_t value = orca_sketch[sketch_index]; // value stored in counter
+        uint32_t value = orca_sketch[exact_bucket_index + bucket_counter_index]; // value stored in counter
         if (value < min)
         {
             min = value;
         }
 
+        // reassign counters to a new row
+        for (int n = bucket_counter_index_row; n < temp_bucket_counter_row_mask; n++)
+        {
+            remaining_bucket_counters[n] = remaining_bucket_counters[n + 1];
+        }
+        temp_bucket_counter_row_mask -= 1;
+
         #ifdef DEBUG
         cout << "bucket_counter_index " << i << ": " << bucket_counter_index << "\n";
         cout << "value: " << value << "\n";
+        cout << "remaining_bucket_counters: ";
+        for (int i = 0; i < bucket_size; i++)
+        {
+            cout << remaining_bucket_counters[i] << " ";
+        }
+        cout << "\n";
         #endif
     }
 

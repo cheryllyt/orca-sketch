@@ -76,14 +76,7 @@ void ORCASketch::increment(const char * str)
         uint bucket_counter_index = remaining_bucket_counters[bucket_counter_index_row];
         int sign = 1 - 2 * (bucket_counter_index_and_sign & 0b1);
 
-        #ifdef DEBUG
-        cout << "remaining_bucket_counters: ";
-        for (int i = 0; i < bucket_size; i++)
-        {
-            cout << remaining_bucket_counters[i] << " ";
-        }
-        cout << "\n";
-        #endif
+        orca_sketch[exact_bucket_index + bucket_counter_index] += sign; // sketch index
 
         // reassign counters to a new row
         for (int n = bucket_counter_index_row; n < temp_bucket_counter_row_mask; n++)
@@ -92,12 +85,16 @@ void ORCASketch::increment(const char * str)
         }
         temp_bucket_counter_row_mask -= 1;
 
-        orca_sketch[exact_bucket_index + bucket_counter_index] += sign; // sketch index
-
         #ifdef DEBUG
         cout << "bucket_counter_index_row " << i << ": " << bucket_counter_index_row << "\n";
         cout << "bucket_counter_index " << i << ": " << bucket_counter_index << "\n";
         cout << "sign_value: " << sign << "\n";
+        cout << "remaining_bucket_counters: ";
+        for (int i = 0; i < bucket_size; i++)
+        {
+            cout << remaining_bucket_counters[i] << " ";
+        }
+        cout << "\n";
         #endif
     }
 
@@ -142,14 +139,8 @@ uint32_t ORCASketch::query(const char * str)
         uint bucket_counter_index = remaining_bucket_counters[bucket_counter_index_row];
         int sign = 1 - 2 * (bucket_counter_index_and_sign & 0b1);
 
-        #ifdef DEBUG
-        cout << "remaining_bucket_counters: ";
-        for (int i = 0; i < bucket_size; i++)
-        {
-            cout << remaining_bucket_counters[i] << " ";
-        }
-        cout << "\n";
-        #endif
+        int32_t counter_value = orca_sketch[exact_bucket_index + bucket_counter_index] * sign; // sketch index
+        counter_values[i - COUNTER_HASH] = counter_value > 0 ? counter_value : 0;
 
         // reassign counters to a new row
         for (int n = bucket_counter_index_row; n < temp_bucket_counter_row_mask; n++)
@@ -158,14 +149,17 @@ uint32_t ORCASketch::query(const char * str)
         }
         temp_bucket_counter_row_mask -= 1;
 
-        int32_t counter_value = orca_sketch[exact_bucket_index + bucket_counter_index] * sign; // sketch index
-        counter_values[i - COUNTER_HASH] = counter_value > 0 ? counter_value : 0;
-
         #ifdef DEBUG
         cout << "bucket_counter_index_row " << i << ": " << bucket_counter_index_row << "\n";
         cout << "bucket_counter_index " << i << ": " << bucket_counter_index << "\n";
         cout << "counter_value: " << counter_value * sign << "\n";
         cout << "sign_value: " << sign << "\n";
+        cout << "remaining_bucket_counters: ";
+        for (int i = 0; i < bucket_size; i++)
+        {
+            cout << remaining_bucket_counters[i] << " ";
+        }
+        cout << "\n";
         #endif
     }
 

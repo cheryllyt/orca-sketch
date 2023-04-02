@@ -1,8 +1,6 @@
 #include "ORCAS.hpp"
 
-#define ARRAY_HASH 0
-#define COUNTER_HASH 1
-#define FT_SIZE 13
+#include "Defs.hpp"
 
 using namespace std;
 

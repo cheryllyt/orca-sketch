@@ -6,8 +6,7 @@
 #include "ORCAS.hpp"
 #include "ORCASTests.hpp"
 
-#define FT_SIZE 13
-#define ARRAY_SIZE 8 // AVX2 available
+#include "Defs.hpp"
 
 using namespace std;
 

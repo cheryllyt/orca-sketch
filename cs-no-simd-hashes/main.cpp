@@ -6,7 +6,7 @@
 #include "ORCAS.hpp"
 #include "ORCASTests.hpp"
 
-#define FT_SIZE 13
+#include "Defs.hpp"
 
 using namespace std;
 

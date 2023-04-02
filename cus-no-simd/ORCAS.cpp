@@ -1,7 +1,6 @@
 #include "ORCAS.hpp"
 
-#define CHAR_TO_INT_DIFF 48
-#define FT_SIZE 13
+#include "Defs.hpp"
 
 using namespace std;
 

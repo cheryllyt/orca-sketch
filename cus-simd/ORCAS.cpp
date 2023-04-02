@@ -22,6 +22,11 @@ void ORCASketch::initialize(int sketch_size, int number_of_buckets, int number_o
     this->number_of_buckets = number_of_buckets;
     this->number_of_bucket_counters = number_of_bucket_counters;
 
+    assert(number_of_bucket_counters > 0);
+    bool n_bucket_counter_is_pow_2 = (number_of_bucket_counters > 0) && ((number_of_bucket_counters & (number_of_bucket_counters - 1)) == 0);
+    set_option_row_size(n_bucket_counter_is_pow_2); // option row size needs to be a power of 2
+    option_row_size_bits = __builtin_ctz(option_row_size);
+
     // fixed assumption that number_of_buckets is power of 2
     assert((number_of_buckets > 0) && ((number_of_buckets & (number_of_buckets - 1)) == 0));
     number_of_bits_bucket = __builtin_ctz(number_of_buckets);
@@ -35,7 +40,7 @@ void ORCASketch::initialize(int sketch_size, int number_of_buckets, int number_o
 
     set_number_of_lookup_table_options();
     number_of_options_ind = number_of_options - 1;
-    create_lookup_tables();
+    create_lookup_tables(n_bucket_counter_is_pow_2);
 
     #ifdef DEBUG
     cout << "\nsketch_size: " << sketch_size << "\n";
@@ -45,6 +50,8 @@ void ORCASketch::initialize(int sketch_size, int number_of_buckets, int number_o
     cout << "number_of_bucket_counters: " << number_of_bucket_counters << "\n";
     cout << "number_of_options: " << number_of_options << "\n";
     cout << "number_of_options_ind: " << number_of_options_ind << "\n";
+    cout << "option_row_size: " << option_row_size << "\n";
+    cout << "option_row_size_bits: " << option_row_size_bits << "\n";
     
     cout << "\n";
     for (int i = 0; i < number_of_options; i++)
@@ -71,10 +78,10 @@ void ORCASketch::initialize(int sketch_size, int number_of_buckets, int number_o
     }
 
     cout << "\n";
-    for (int k = 0; k < (number_of_options * number_of_bucket_counters); k++)
+    for (int k = 0; k < (number_of_options * option_row_size); k++)
     {
         cout << (int) bucket_counter_ind_lookup_table[k] << " ";
-        if ((k + 1) % number_of_bucket_counters == 0)
+        if ((k + 1) % option_row_size == 0)
         {
             cout << "\n";
         }
@@ -97,13 +104,15 @@ void ORCASketch::increment(const char * str)
         option_index = (bobhash_return >> number_of_bits_bucket) % number_of_options_ind;
     }
 
+    uint exact_bucket_index = bucket_index << number_of_bits_bucket_size;
+    uint start_option_index = option_index << option_row_size_bits;
+
     #ifdef DEBUG
     cout << "\nbucket_index: " << bucket_index << "\n";
     cout << "option_index: " << option_index << "\n";
+    cout << "exact_bucket_index: " << exact_bucket_index << "\n";
+    cout << "start_option_index: " << start_option_index << "\n";
     #endif
-
-    uint exact_bucket_index = bucket_index << number_of_bits_bucket_size;
-    uint start_option_index = option_index * number_of_bucket_counters;
 
     uint32_t min = UINT32_MAX;
 
@@ -183,7 +192,7 @@ uint32_t ORCASketch::query(const char * str)
     }
 
     uint exact_bucket_index = bucket_index << number_of_bits_bucket_size;
-    uint start_option_index = option_index * number_of_bucket_counters;
+    uint start_option_index = option_index << option_row_size_bits;
 
     #ifdef DEBUG
     cout << "\nbucket_index: " << bucket_index << "\n";
@@ -226,6 +235,21 @@ uint32_t ORCASketch::query(const char * str)
     #endif
 
     return min;
+}
+
+void ORCASketch::set_option_row_size(bool n_bucket_counter_is_pow_2)
+{    
+    // directly set option_row_size as number_of_bucket_counters
+    if (n_bucket_counter_is_pow_2)
+    {
+        option_row_size = number_of_bucket_counters;
+    }
+    else
+    {
+        int n_leading_zeros = __builtin_clz(number_of_bucket_counters);
+        int n_bits_bucket_counters = 32 - n_leading_zeros;
+        option_row_size = pow(2, n_bits_bucket_counters);
+    }
 }
 
 void ORCASketch::set_number_of_lookup_table_options()
@@ -274,13 +298,16 @@ void ORCASketch::set_number_of_lookup_table_options()
 }
 
 // Lookup table (of counter combinations)
-void ORCASketch::create_lookup_tables()
+void ORCASketch::create_lookup_tables(bool n_bucket_counter_is_pow_2)
 {
-    int ind_lookup_table_len = number_of_options * number_of_bucket_counters;
+    int ind_lookup_table_len = number_of_options * option_row_size;
     
     bucket_counter_vec_lookup_table = new __m256i[number_of_options];
     bucket_counter_inv_lookup_table = new __m256i[number_of_options];
     bucket_counter_ind_lookup_table = new uint8_t[ind_lookup_table_len];
+
+    int temp_ind_lookup_table_len = number_of_options * number_of_bucket_counters;
+    uint8_t *temp_bucket_counter_ind_lookup_table = new uint8_t[temp_ind_lookup_table_len];
 
     // load combinations into lookup tables
     char lookup_table_file_name[] = "lookup_table.txt";
@@ -321,8 +348,8 @@ void ORCASketch::create_lookup_tables()
         int_num = num - CHAR_TO_INT_DIFF;
     } // whitespace found
 
-    // load index lookup table
-    for (int k = 0; k < ind_lookup_table_len; k++)
+    // load temporary index lookup table
+    for (int k = 0; k < temp_ind_lookup_table_len; k++)
     {
         while (int_num < 0) // ignore non-integer
         {
@@ -339,6 +366,32 @@ void ORCASketch::create_lookup_tables()
             int_num = num - CHAR_TO_INT_DIFF;
         } // non-integer found; end of index
 
-        bucket_counter_ind_lookup_table[k] = stoi(index);
+        temp_bucket_counter_ind_lookup_table[k] = stoi(index);
+    }
+
+    // move index into actual lookup table
+    if (n_bucket_counter_is_pow_2)
+    {
+        for (int m = 0; m < ind_lookup_table_len; m++)
+        {
+            bucket_counter_ind_lookup_table[m] = temp_bucket_counter_ind_lookup_table[m];
+        }
+    }
+    else
+    {
+        int index_to_store = 0;
+        for (int option = 0; option < number_of_options; option++)
+        {
+            uint start_option_index = option << option_row_size_bits;
+            for (int c = 0; c < number_of_bucket_counters; c++)
+            {
+                bucket_counter_ind_lookup_table[start_option_index + c] = temp_bucket_counter_ind_lookup_table[index_to_store];
+                index_to_store++;
+            }
+            for (int d = number_of_bucket_counters; d < option_row_size; d++)
+            {
+                bucket_counter_ind_lookup_table[start_option_index + d] = -1;
+            }
+        }
     }
 }

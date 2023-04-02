@@ -2,14 +2,14 @@ import os
 import matplotlib.pyplot as plt
 import statistics
 
-BUCKET_COUNTERS = [1,3,5]
-BUCKET_SIZE = [4,8,16,32,64]
+ARRAY_COUNTERS = [1,3,5]
+ARRAY_SIZE = [4,8,16,32,64]
 ARRAY_SKETCH_SIZE = 1 # array size = sketch size -> number of arrays = 1
 
-COUNTERS_MODE = 0 # plot different bucket_counter
-SIZE_MODE = 1 # plot different bucket_size
+COUNTERS_MODE = 0 # plot different array_counter
+SIZE_MODE = 1 # plot different array_size
 
-def get_all_values(speed_data, error_data, fixed_bucket_counter=None, fixed_bucket_size=None):
+def get_all_values(speed_data, error_data, fixed_array_counter=None, fixed_array_size=None):
 
     count_speed_dict = {}
     count_error_dict = {}
@@ -18,13 +18,13 @@ def get_all_values(speed_data, error_data, fixed_bucket_counter=None, fixed_buck
     array_sketch_size_speed_dict = {}
     array_sketch_size_error_dict = {}
 
-    for n_buc_counters in BUCKET_COUNTERS:
+    for n_buc_counters in ARRAY_COUNTERS:
         count_speed_dict[n_buc_counters] = {}
         count_error_dict[n_buc_counters] = {}
 
-    for bucket_size in BUCKET_SIZE:
-        size_speed_dict[bucket_size] = {}
-        size_error_dict[bucket_size] = {}
+    for ARRAY_SIZE in ARRAY_SIZE:
+        size_speed_dict[ARRAY_SIZE] = {}
+        size_error_dict[ARRAY_SIZE] = {}
     
     array_sketch_size_speed_dict[ARRAY_SKETCH_SIZE] = {}
     array_sketch_size_error_dict[ARRAY_SKETCH_SIZE] = {}
@@ -33,23 +33,23 @@ def get_all_values(speed_data, error_data, fixed_bucket_counter=None, fixed_buck
         split_line = line.split('\t')
         N = int(split_line[1])
         sketch_size = int(split_line[3])
-        n_buckets = int(split_line[5])
+        n_arrays = int(split_line[5])
         n_buc_counters = int(split_line[7])
         time = int(split_line[-1])
 
-        bucket_size = sketch_size / n_buckets
+        ARRAY_SIZE = sketch_size / n_arrays
         speed = N / time
 
-        if (n_buc_counters in count_speed_dict) and (bucket_size == fixed_bucket_size):
+        if (n_buc_counters in count_speed_dict) and (ARRAY_SIZE == fixed_array_size):
             if sketch_size not in count_speed_dict[n_buc_counters]:
                 count_speed_dict[n_buc_counters][sketch_size] = []
             count_speed_dict[n_buc_counters][sketch_size].append(speed)
 
-        if (bucket_size in size_speed_dict) and (n_buc_counters == fixed_bucket_counter):
-            if sketch_size not in size_speed_dict[bucket_size]:
-                size_speed_dict[bucket_size][sketch_size] = []
-            size_speed_dict[bucket_size][sketch_size].append(speed)
-        elif (n_buckets == ARRAY_SKETCH_SIZE) and (n_buc_counters == fixed_bucket_counter):
+        if (ARRAY_SIZE in size_speed_dict) and (n_buc_counters == fixed_array_counter):
+            if sketch_size not in size_speed_dict[ARRAY_SIZE]:
+                size_speed_dict[ARRAY_SIZE][sketch_size] = []
+            size_speed_dict[ARRAY_SIZE][sketch_size].append(speed)
+        elif (n_arrays == ARRAY_SKETCH_SIZE) and (n_buc_counters == fixed_array_counter):
             if sketch_size not in array_sketch_size_speed_dict[ARRAY_SKETCH_SIZE]:
                 array_sketch_size_speed_dict[ARRAY_SKETCH_SIZE][sketch_size] = []
             array_sketch_size_speed_dict[ARRAY_SKETCH_SIZE][sketch_size].append(speed)
@@ -57,22 +57,22 @@ def get_all_values(speed_data, error_data, fixed_bucket_counter=None, fixed_buck
     for line in error_data:
         split_line = line.split('\t')
         sketch_size = int(split_line[3])
-        n_buckets = int(split_line[5])
+        n_arrays = int(split_line[5])
         n_buc_counters = int(split_line[7])
         l2 = float(split_line[-3])
 
-        bucket_size = sketch_size / n_buckets
+        ARRAY_SIZE = sketch_size / n_arrays
 
-        if (n_buc_counters in count_error_dict) and (bucket_size == fixed_bucket_size):
+        if (n_buc_counters in count_error_dict) and (ARRAY_SIZE == fixed_array_size):
             if sketch_size not in count_error_dict[n_buc_counters]:
                 count_error_dict[n_buc_counters][sketch_size] = []
             count_error_dict[n_buc_counters][sketch_size].append(l2)
         
-        if (bucket_size in size_error_dict) and (n_buc_counters == fixed_bucket_counter):
-            if sketch_size not in size_error_dict[bucket_size]:
-                size_error_dict[bucket_size][sketch_size] = []
-            size_error_dict[bucket_size][sketch_size].append(l2)
-        elif (n_buckets == ARRAY_SKETCH_SIZE) and (n_buc_counters == fixed_bucket_counter):
+        if (ARRAY_SIZE in size_error_dict) and (n_buc_counters == fixed_array_counter):
+            if sketch_size not in size_error_dict[ARRAY_SIZE]:
+                size_error_dict[ARRAY_SIZE][sketch_size] = []
+            size_error_dict[ARRAY_SIZE][sketch_size].append(l2)
+        elif (n_arrays == ARRAY_SKETCH_SIZE) and (n_buc_counters == fixed_array_counter):
             if sketch_size not in array_sketch_size_error_dict[ARRAY_SKETCH_SIZE]:
                 array_sketch_size_error_dict[ARRAY_SKETCH_SIZE][sketch_size] = []
             array_sketch_size_error_dict[ARRAY_SKETCH_SIZE][sketch_size].append(l2)
@@ -88,11 +88,11 @@ def get_median(count_speed_dict_all, count_error_dict_all, size_speed_dict_all, 
     array_sketch_size_speed_dict = {}
     array_sketch_size_error_dict = {}
 
-    for n_buc_counters in BUCKET_COUNTERS:
+    for n_buc_counters in ARRAY_COUNTERS:
         count_speed_dict[n_buc_counters] = []
         count_error_dict[n_buc_counters] = []
 
-    for n_buc_counters in BUCKET_COUNTERS:
+    for n_buc_counters in ARRAY_COUNTERS:
         for sketch_size in count_speed_dict_all[n_buc_counters]:
             med = statistics.median(count_speed_dict_all[n_buc_counters][sketch_size])
             count_speed_dict[n_buc_counters].append((sketch_size, med))
@@ -101,18 +101,18 @@ def get_median(count_speed_dict_all, count_error_dict_all, size_speed_dict_all, 
             med = statistics.median(count_error_dict_all[n_buc_counters][sketch_size])
             count_error_dict[n_buc_counters].append((sketch_size, med))
 
-    for bucket_size in BUCKET_SIZE:
-        size_speed_dict[bucket_size] = []
-        size_error_dict[bucket_size] = []
+    for ARRAY_SIZE in ARRAY_SIZE:
+        size_speed_dict[ARRAY_SIZE] = []
+        size_error_dict[ARRAY_SIZE] = []
 
-    for bucket_size in BUCKET_SIZE:
-        for sketch_size in size_speed_dict_all[bucket_size]:
-            med = statistics.median(size_speed_dict_all[bucket_size][sketch_size])
-            size_speed_dict[bucket_size].append((sketch_size, med))
+    for ARRAY_SIZE in ARRAY_SIZE:
+        for sketch_size in size_speed_dict_all[ARRAY_SIZE]:
+            med = statistics.median(size_speed_dict_all[ARRAY_SIZE][sketch_size])
+            size_speed_dict[ARRAY_SIZE].append((sketch_size, med))
 
-        for sketch_size in size_error_dict_all[bucket_size]:
-            med = statistics.median(size_error_dict_all[bucket_size][sketch_size])
-            size_error_dict[bucket_size].append((sketch_size, med))
+        for sketch_size in size_error_dict_all[ARRAY_SIZE]:
+            med = statistics.median(size_error_dict_all[ARRAY_SIZE][sketch_size])
+            size_error_dict[ARRAY_SIZE].append((sketch_size, med))
     
     array_sketch_size_speed_dict[ARRAY_SKETCH_SIZE] = []
     array_sketch_size_error_dict[ARRAY_SKETCH_SIZE] = []
@@ -127,7 +127,7 @@ def get_median(count_speed_dict_all, count_error_dict_all, size_speed_dict_all, 
     
     return count_speed_dict, count_error_dict, size_speed_dict, size_error_dict, array_sketch_size_speed_dict, array_sketch_size_error_dict
 
-def plot_speed_and_error(alpha:float, mode:int, fixed_bucket_counter=None, fixed_bucket_size=None):
+def plot_speed_and_error(alpha:float, mode:int, fixed_array_counter=None, fixed_array_size=None):
     
     # alpha must be 3 char (1 digit before '.' and 1 digit after)
     alpha_str = str(alpha)[0] + '-' + str(alpha)[-1]
@@ -150,13 +150,13 @@ def plot_speed_and_error(alpha:float, mode:int, fixed_bucket_counter=None, fixed
         elif 'error_on_arrival' in fn:
             error_data = error_data + indiv_data
 
-    count_speed_dict_all, count_error_dict_all, size_speed_dict_all, size_error_dict_all, array_sketch_size_speed_dict_all, array_sketch_size_error_dict_all = get_all_values(speed_data, error_data, fixed_bucket_counter, fixed_bucket_size)
+    count_speed_dict_all, count_error_dict_all, size_speed_dict_all, size_error_dict_all, array_sketch_size_speed_dict_all, array_sketch_size_error_dict_all = get_all_values(speed_data, error_data, fixed_array_counter, fixed_array_size)
     count_speed_dict, count_error_dict, size_speed_dict, size_error_dict, array_sketch_size_speed_dict, array_sketch_size_error_dict = get_median(count_speed_dict_all, count_error_dict_all, size_speed_dict_all, size_error_dict_all, array_sketch_size_speed_dict_all, array_sketch_size_error_dict_all)
 
     fig, (speed_ax, error_ax) = plt.subplots(1, 2)
 
     if mode == COUNTERS_MODE:
-        for n_buc_counters in BUCKET_COUNTERS:
+        for n_buc_counters in ARRAY_COUNTERS:
             speed_x = [sketch_size*4/1024 for (sketch_size, speed) in count_speed_dict[n_buc_counters]]
             speed_y = [speed for (sketch_size, speed) in count_speed_dict[n_buc_counters]]
             speed_ax.plot(speed_x, speed_y, label=str(n_buc_counters)+' array counters')
@@ -166,14 +166,14 @@ def plot_speed_and_error(alpha:float, mode:int, fixed_bucket_counter=None, fixed
             error_ax.plot(error_x, error_y, label=str(n_buc_counters)+' array counters')
 
     elif mode == SIZE_MODE:
-        for bucket_size in BUCKET_SIZE:
-            speed_x = [sketch_size*4/1024 for (sketch_size, speed) in size_speed_dict[bucket_size]]
-            speed_y = [speed for (sketch_size, speed) in size_speed_dict[bucket_size]]
-            speed_ax.plot(speed_x, speed_y, label=str(bucket_size)+' array size')
+        for ARRAY_SIZE in ARRAY_SIZE:
+            speed_x = [sketch_size*4/1024 for (sketch_size, speed) in size_speed_dict[ARRAY_SIZE]]
+            speed_y = [speed for (sketch_size, speed) in size_speed_dict[ARRAY_SIZE]]
+            speed_ax.plot(speed_x, speed_y, label=str(ARRAY_SIZE)+' array size')
 
-            error_x = [sketch_size*4/1024 for (sketch_size, l2) in size_error_dict[bucket_size]]
-            error_y = [l2 for (sketch_size, l2) in size_error_dict[bucket_size]]
-            error_ax.plot(error_x, error_y, label=str(bucket_size)+' array size')
+            error_x = [sketch_size*4/1024 for (sketch_size, l2) in size_error_dict[ARRAY_SIZE]]
+            error_y = [l2 for (sketch_size, l2) in size_error_dict[ARRAY_SIZE]]
+            error_ax.plot(error_x, error_y, label=str(ARRAY_SIZE)+' array size')
         
         speed_x = [sketch_size*4/1024 for (sketch_size, speed) in array_sketch_size_speed_dict[ARRAY_SKETCH_SIZE]]
         speed_y = [speed for (sketch_size, speed) in array_sketch_size_speed_dict[ARRAY_SKETCH_SIZE]]
@@ -185,10 +185,10 @@ def plot_speed_and_error(alpha:float, mode:int, fixed_bucket_counter=None, fixed
 
     N = speed_data[0].split('\t')[1]
     fig_title = 'N = ' + N + ' | alpha = ' + str(alpha) + ' | fixed '
-    if fixed_bucket_counter is not None:
-        fig_title = fig_title + 'array counter = ' + str(fixed_bucket_counter)
-    elif fixed_bucket_size is not None:
-        fig_title = fig_title + 'array size = ' + str(fixed_bucket_size)
+    if fixed_array_counter is not None:
+        fig_title = fig_title + 'array counter = ' + str(fixed_array_counter)
+    elif fixed_array_size is not None:
+        fig_title = fig_title + 'array size = ' + str(fixed_array_size)
     else:
         fig_title = fig_title + '[none]'
     fig.suptitle(fig_title, fontsize=18)
@@ -208,8 +208,8 @@ def plot_speed_and_error(alpha:float, mode:int, fixed_bucket_counter=None, fixed
 
 def plot_all_alpha():
 
-    # plot_speed_and_error(1.0, COUNTERS_MODE, fixed_bucket_size=16) # fix bucket_size at 16 when plotting different bucket_counter
-    plot_speed_and_error(1.0, SIZE_MODE, fixed_bucket_counter=3) # fix bucket_counter at 3 when plotting different bucket_size
+    # plot_speed_and_error(1.0, COUNTERS_MODE, fixed_array_size=16) # fix array_size at 16 when plotting different array_counter
+    plot_speed_and_error(1.0, SIZE_MODE, fixed_array_counter=3) # fix array_counter at 3 when plotting different array_size
     
     plt.show()
 

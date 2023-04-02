@@ -12,10 +12,10 @@
 using namespace std;
 
 // test referenced from: https://github.com/SALSA-ICDE2021/SALSA
-void test_orcas_error_on_arrival(int N, int sketch_size, int number_of_buckets, int number_of_bucket_counters, int seed, const char* data)
+void test_orcas_error_on_arrival(int N, int sketch_size, int number_of_arrays, int number_of_array_counters, int seed, const char* data)
 {
     ORCASketch orca_sketch;
-    orca_sketch.initialize(sketch_size, number_of_buckets, number_of_bucket_counters, seed);
+    orca_sketch.initialize(sketch_size, number_of_arrays, number_of_array_counters, seed);
 
     unordered_map<uint64_t, uint64_t> true_sizes;
 
@@ -56,8 +56,8 @@ void test_orcas_error_on_arrival(int N, int sketch_size, int number_of_buckets, 
     results_file.open(file_name, ofstream::out | ofstream::app);
 	results_file << "N\t" << N
                  << "\tSketch_Size\t" << sketch_size
-                 << "\tNo_Buckets\t" << number_of_buckets
-                 << "\tNo_B_Counters\t" << number_of_bucket_counters
+                 << "\tNo_Arrays\t" << number_of_arrays
+                 << "\tNo_A_Counters\t" << number_of_array_counters
                  << "\tL1 Error\t" << L1e
                  << "\tL2 Error\t" << L2e
                  << "\tL(inf) Error\t" << L_max
@@ -65,10 +65,10 @@ void test_orcas_error_on_arrival(int N, int sketch_size, int number_of_buckets, 
 }
 
 // test referenced from: https://github.com/SALSA-ICDE2021/SALSA
-void test_orcas_speed(int N, int sketch_size, int number_of_buckets, int number_of_bucket_counters, int seed, const char* data)
+void test_orcas_speed(int N, int sketch_size, int number_of_arrays, int number_of_array_counters, int seed, const char* data)
 {
     ORCASketch orca_sketch;
-    orca_sketch.initialize(sketch_size, number_of_buckets, number_of_bucket_counters, seed);
+    orca_sketch.initialize(sketch_size, number_of_arrays, number_of_array_counters, seed);
 
     int64_t stop_loop = N * FT_SIZE;
 
@@ -88,17 +88,17 @@ void test_orcas_speed(int N, int sketch_size, int number_of_buckets, int number_
     results_file.open(file_name, ofstream::out | ofstream::app);
 	results_file << "N\t" << N
                  << "\tSketch_Size\t" << sketch_size
-                 << "\tNo_Buckets\t" << number_of_buckets
-                 << "\tNo_B_Counters\t" << number_of_bucket_counters
+                 << "\tNo_Arrays\t" << number_of_arrays
+                 << "\tNo_A_Counters\t" << number_of_array_counters
                  << "\tTime\t" << time
                  << endl;
 }
 
 // test referenced from: https://github.com/SALSA-ICDE2021/SALSA
-void test_orcas_final_error(int N, int sketch_size, int number_of_buckets, int number_of_bucket_counters, int seed, const char* data)
+void test_orcas_final_error(int N, int sketch_size, int number_of_arrays, int number_of_array_counters, int seed, const char* data)
 {
     ORCASketch orca_sketch;
-    orca_sketch.initialize(sketch_size, number_of_buckets, number_of_bucket_counters, seed);
+    orca_sketch.initialize(sketch_size, number_of_arrays, number_of_array_counters, seed);
 
     unordered_map<uint64_t, uint64_t> true_sizes;
 	unordered_map<uint64_t, uint64_t> ft_key_i_values;
@@ -164,8 +164,8 @@ void test_orcas_final_error(int N, int sketch_size, int number_of_buckets, int n
     results_file.open(file_name, ofstream::out | ofstream::app);
 	results_file << "N\t" << N
                  << "\tSketch_Size\t" << sketch_size
-                 << "\tNo_Buckets\t" << number_of_buckets
-                 << "\tNo_B_Counters\t" << number_of_bucket_counters;
+                 << "\tNo_Arrays\t" << number_of_arrays
+                 << "\tNo_A_Counters\t" << number_of_array_counters;
     for (int i = 0; i < HHre.size(); ++i)
 	{
 		results_file << "\tThreshold\t" << thresholds[i] << "\tRelError\t" << HHre[i];

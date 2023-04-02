@@ -15,14 +15,14 @@
 class ORCASketch {
 
 	int sketch_size;
-	int number_of_buckets;
-    int number_of_bucket_counters;
+	int number_of_arrays;
+    int number_of_array_counters;
 
-    int bucket_size;
-    int bucket_number_mask;
-    int bucket_counter_mask;
+    int array_size;
+    int array_number_mask;
+    int array_counter_mask;
 
-    int number_of_bits_bucket_size; // number of bits required to store bucket size
+    int number_of_bits_array_size; // number of bits required to store array size
 
     int number_of_hash_functions;
 
@@ -34,7 +34,7 @@ public:
 	ORCASketch();
     ~ORCASketch();
 
-	void initialize(int sketch_size, int bucket_size, int number_of_bucket_counters, int seed);
+	void initialize(int sketch_size, int array_size, int number_of_array_counters, int seed);
 	void increment(const char * str);
 	uint32_t query(const char * str);
 

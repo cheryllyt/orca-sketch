@@ -15,19 +15,19 @@ using namespace std;
     ===============
 
     data structure:
-    SUMMARY - one row of counters, split into buckets
+    SUMMARY - one row of counters, split into arrays
     let W = total number of counters (in the row)
-    let B = size of a bucket (in number of counters)
-    therefore, number of buckets = W / B
-    let A = number of counters an item should be mapped into within a bucket
-    therefore, number of options for which A counters within a bucket an item should be mapped into
+    let B = size of a array (in number of counters)
+    therefore, number of arrays = W / B
+    let A = number of counters an item should be mapped into within a array
+    therefore, number of options for which A counters within a array an item should be mapped into
              = number of rows in lookup table (of counter combinations)
              = B choose A (combination) 
 
     algorithm:
     1. Use BobHash (the hash function) on an item -> returns 32 bits
     2. Split into 22 bits and 10 (least significant) bits
-    3. Use the 10 bits to map into a bucket
+    3. Use the 10 bits to map into a array
     4. Use the 22 bits to map into a row in the lookup table
 
     command to compile on MacBook:
@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
         cout << "argv[2]: int seed\n";
         cout << "argv[3]: float alpha\n";
         cout << "argv[4]: int sketch_size\n";
-        cout << "argv[5]: int number_of_buckets\n";
+        cout << "argv[5]: int number_of_arrays\n";
         system("pause");
 		return 0;
     }
@@ -56,15 +56,15 @@ int main(int argc, char* argv[])
 
     // for creating ORCA sketch
     int sketch_size = atoi(argv[4]); // e.g. 32
-    int number_of_buckets = atoi(argv[5]); // e.g. 4
+    int number_of_arrays = atoi(argv[5]); // e.g. 4
 
     // hardcoded median computations for efficiency
     #ifdef COUNTERONE
-    int number_of_bucket_counters = 1;
+    int number_of_array_counters = 1;
     #elif defined COUNTERFIVE
-    int number_of_bucket_counters = 5;
+    int number_of_array_counters = 5;
     #else // default
-    int number_of_bucket_counters = 3;
+    int number_of_array_counters = 3;
     #endif
 
     char path[] = "./zipf";
@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
     
     #ifdef DEBUG // ORCA sketch driver code
     ORCASketch orcasketch;
-    orcasketch.initialize(sketch_size, number_of_buckets, number_of_bucket_counters, seed);
+    orcasketch.initialize(sketch_size, number_of_arrays, number_of_array_counters, seed);
 
     int64_t stop_loop = N * FT_SIZE;
 	for (int64_t i = 0; i < stop_loop; i += FT_SIZE)
@@ -105,14 +105,14 @@ int main(int argc, char* argv[])
 
     /*
         memory = sketch_size x size of counter (4 bytes - size of integer)
-        influences -> number_of_buckets & number_of_bucket_counters (hence also number_of_options)
+        influences -> number_of_arrays & number_of_array_counters (hence also number_of_options)
         (1) x-axis = memory; y-axis = error (L2)
         (2) x-axis = memory; y-axis = speed/throughput (N / time)
     */
 
     #ifndef DEBUG // ORCA sketch tests
-    test_orcas_error_on_arrival(N, sketch_size, number_of_buckets, number_of_bucket_counters, seed, data);
-    test_orcas_speed(N, sketch_size, number_of_buckets, number_of_bucket_counters, seed, data);
+    test_orcas_error_on_arrival(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+    test_orcas_speed(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
     cout << "\nTests complete!\n";
     #endif
 

@@ -59,38 +59,50 @@ void ORCASketch::increment(const char * str)
     cout << "exact_array_index: " << exact_array_index << "\n";
     #endif
 
-    int temp_array_counter_row_mask = array_counter_mask;
-
-    int remaining_array_counters[array_size];
-    for (int c = 0; c < array_size; c++)
+    uint *previous_hashes = new uint[number_of_array_counters]();
+    for (int k = 0; k < number_of_array_counters; k++)
     {
-        remaining_array_counters[c] = c;
+        previous_hashes[k] = -1;
     }
-
+    
     for (int i = COUNTER_HASH; i < number_of_hash_functions; i++)
     {
         uint array_counter_index_and_sign = bobhash[i].run(str, FT_SIZE);
-        int array_counter_index_row = (array_counter_index_and_sign >> 0b1) & temp_array_counter_row_mask;
-        uint array_counter_index = remaining_array_counters[array_counter_index_row];
+        
+        uint array_counter_index = (array_counter_index_and_sign >> 0b1) & array_counter_mask;
         int sign = 1 - 2 * (array_counter_index_and_sign & 0b1);
+
+        #ifdef DEBUG
+        cout << "unconfirmed_array_counter_index: " << array_counter_index << "\n";
+        #endif
+
+        bool new_counter = false;
+        while (new_counter == false)
+        {
+            new_counter = true;
+
+            for (int j = 0; j < (i-COUNTER_HASH); j++)
+            {
+                if (array_counter_index == previous_hashes[j])
+                {
+                    new_counter = false;
+                    array_counter_index = array_counter_index == array_counter_mask ? 0 : ++array_counter_index;
+                    break;
+                }
+            }
+        }
+        
+        previous_hashes[i-COUNTER_HASH] = array_counter_index;
 
         orca_sketch[exact_array_index + array_counter_index] += sign; // sketch index
 
-        // reassign counters to a new row
-        for (int n = array_counter_index_row; n < temp_array_counter_row_mask; n++)
-        {
-            remaining_array_counters[n] = remaining_array_counters[n + 1];
-        }
-        temp_array_counter_row_mask -= 1;
-
         #ifdef DEBUG
-        cout << "array_counter_index_row " << i << ": " << array_counter_index_row << "\n";
-        cout << "array_counter_index " << i << ": " << array_counter_index << "\n";
-        cout << "sign_value: " << sign << "\n";
-        cout << "remaining_array_counters: ";
-        for (int i = 0; i < array_size; i++)
+        cout << "array_counter_index: " << array_counter_index << "\n";
+        cout << "sign: " << sign << "\n";
+        cout << "previous_hashes: ";
+        for (int m = 0; m < number_of_array_counters; m++)
         {
-            cout << remaining_array_counters[i] << " ";
+            cout << previous_hashes[m] << " ";
         }
         cout << "\n";
         #endif
@@ -120,42 +132,54 @@ uint32_t ORCASketch::query(const char * str)
     cout << "exact_array_index: " << exact_array_index << "\n";
     #endif
 
-    int temp_array_counter_row_mask = array_counter_mask;
-
-    int remaining_array_counters[array_size];
-    for (int c = 0; c < array_size; c++)
+    uint *previous_hashes = new uint[number_of_array_counters]();
+    for (int k = 0; k < number_of_array_counters; k++)
     {
-        remaining_array_counters[c] = c;
+        previous_hashes[k] = -1;
     }
 
     int32_t counter_values[number_of_array_counters];
-
+    
     for (int i = COUNTER_HASH; i < number_of_hash_functions; i++)
     {
         uint array_counter_index_and_sign = bobhash[i].run(str, FT_SIZE);
-        int array_counter_index_row = (array_counter_index_and_sign >> 0b1) & temp_array_counter_row_mask;
-        uint array_counter_index = remaining_array_counters[array_counter_index_row];
+        
+        uint array_counter_index = (array_counter_index_and_sign >> 0b1) & array_counter_mask;
         int sign = 1 - 2 * (array_counter_index_and_sign & 0b1);
 
-        int32_t counter_value = orca_sketch[exact_array_index + array_counter_index] * sign; // sketch index
-        counter_values[i - COUNTER_HASH] = counter_value > 0 ? counter_value : 0;
+        #ifdef DEBUG
+        cout << "unconfirmed_array_counter_index: " << array_counter_index << "\n";
+        #endif
 
-        // reassign counters to a new row
-        for (int n = array_counter_index_row; n < temp_array_counter_row_mask; n++)
+        bool new_counter = false;
+        while (new_counter == false)
         {
-            remaining_array_counters[n] = remaining_array_counters[n + 1];
+            new_counter = true;
+
+            for (int j = 0; j < (i-COUNTER_HASH); j++)
+            {
+                if (array_counter_index == previous_hashes[j])
+                {
+                    new_counter = false;
+                    array_counter_index = array_counter_index == array_counter_mask ? 0 : ++array_counter_index;
+                    break;
+                }
+            }
         }
-        temp_array_counter_row_mask -= 1;
+        
+        previous_hashes[i-COUNTER_HASH] = array_counter_index;
+
+        int32_t counter_value = orca_sketch[exact_array_index + array_counter_index] * sign; // sketch index
+        counter_values[i-COUNTER_HASH] = counter_value > 0 ? counter_value : 0;
 
         #ifdef DEBUG
-        cout << "array_counter_index_row " << i << ": " << array_counter_index_row << "\n";
-        cout << "array_counter_index " << i << ": " << array_counter_index << "\n";
+        cout << "array_counter_index: " << array_counter_index << "\n";
         cout << "counter_value: " << counter_value * sign << "\n";
         cout << "sign_value: " << sign << "\n";
-        cout << "remaining_array_counters: ";
-        for (int i = 0; i < array_size; i++)
+        cout << "previous_hashes: ";
+        for (int m = 0; m < number_of_array_counters; m++)
         {
-            cout << remaining_array_counters[i] << " ";
+            cout << previous_hashes[m] << " ";
         }
         cout << "\n";
         #endif

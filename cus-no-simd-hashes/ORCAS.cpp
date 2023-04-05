@@ -62,71 +62,66 @@ void ORCASketch::increment(const char * str)
     uint32_t min = UINT32_MAX;
 
     // find min value
-    int temp_array_counter_row_mask = array_counter_mask;
-
-    int remaining_array_counters[array_size];
-    for (int c = 0; c < array_size; c++)
+    uint *previous_hashes = new uint[number_of_array_counters]();
+    for (int k = 0; k < number_of_array_counters; k++)
     {
-        remaining_array_counters[c] = c;
+        previous_hashes[k] = -1;
     }
     
     for (int i = COUNTER_HASH; i < number_of_hash_functions; i++)
     {
-        uint array_counter_index_row = (bobhash[i].run(str, FT_SIZE)) & temp_array_counter_row_mask;
-        uint array_counter_index = remaining_array_counters[array_counter_index_row];
-        int sketch_index = exact_array_index + array_counter_index; // calculate exact index in ORCASketch to increment
+        uint array_counter_index = (bobhash[i].run(str, FT_SIZE)) & array_counter_mask;
+
+        #ifdef DEBUG
+        cout << "unconfirmed_array_counter_index: " << array_counter_index << "\n";
+        #endif
+
+        bool new_counter = false;
+        while (new_counter == false)
+        {
+            new_counter = true;
+
+            for (int j = 0; j < (i-COUNTER_HASH); j++)
+            {
+                if (array_counter_index == previous_hashes[j])
+                {
+                    new_counter = false;
+                    array_counter_index = array_counter_index == array_counter_mask ? 0 : ++array_counter_index;
+                    break;
+                }
+            }
+        }
         
-        uint32_t counter_value = orca_sketch[sketch_index];
+        previous_hashes[i-COUNTER_HASH] = array_counter_index;
+
+        uint32_t counter_value = orca_sketch[exact_array_index + array_counter_index]; // sketch index
         if (counter_value < min)
         {
             min = counter_value;
         }
 
-        // reassign counters to a new row
-        for (int n = array_counter_index_row; n < temp_array_counter_row_mask; n++)
-        {
-            remaining_array_counters[n] = remaining_array_counters[n + 1];
-        }
-        temp_array_counter_row_mask -= 1;
-
         #ifdef DEBUG
-        cout << "array_counter_index_row " << i << ": " << array_counter_index_row << "\n";
         cout << "array_counter_index: " << array_counter_index << "\n";
-        cout << "counter_value: " << counter_value << "\n";
-        cout << "remaining_array_counters: ";
-        for (int i = 0; i < array_size; i++)
+        cout << "previous_hashes: ";
+        for (int m = 0; m < number_of_array_counters; m++)
         {
-            cout << remaining_array_counters[i] << " ";
+            cout << previous_hashes[m] << " ";
         }
         cout << "\n";
         #endif
     }
 
     // increment only counters with min value
-    temp_array_counter_row_mask = array_counter_mask;
+    for (int k = 0; k < number_of_array_counters; k++)
+    {
+        uint array_counter_index = previous_hashes[k];
 
-    for (int c = 0; c < array_size; c++)
-    {
-        remaining_array_counters[c] = c;
-    }
-    
-    for (int i = COUNTER_HASH; i < number_of_hash_functions; i++)
-    {
-        uint array_counter_index_row = (bobhash[i].run(str, FT_SIZE)) & temp_array_counter_row_mask;
-        uint array_counter_index = remaining_array_counters[array_counter_index_row];
         int sketch_index = exact_array_index + array_counter_index; // calculate exact index in ORCASketch to increment
-        
+
         if (orca_sketch[sketch_index] == min)
         {
             orca_sketch[sketch_index]++;
         }
-
-        // reassign counters to a new row
-        for (int n = array_counter_index_row; n < temp_array_counter_row_mask; n++)
-        {
-            remaining_array_counters[n] = remaining_array_counters[n + 1];
-        }
-        temp_array_counter_row_mask -= 1;
     }
 
     #ifdef DEBUG
@@ -154,20 +149,39 @@ uint32_t ORCASketch::query(const char * str)
     cout << "exact_array_index: " << exact_array_index << "\n";
     #endif
 
-    int temp_array_counter_row_mask = array_counter_mask;
-
-    int remaining_array_counters[array_size];
-    for (int c = 0; c < array_size; c++)
+    uint *previous_hashes = new uint[number_of_array_counters]();
+    for (int k = 0; k < number_of_array_counters; k++)
     {
-        remaining_array_counters[c] = c;
+        previous_hashes[k] = -1;
     }
 
     uint32_t min = UINT32_MAX;
     
     for (int i = COUNTER_HASH; i < number_of_hash_functions; i++)
     {
-        uint array_counter_index_row = (bobhash[i].run(str, FT_SIZE)) & temp_array_counter_row_mask;
-        uint array_counter_index = remaining_array_counters[array_counter_index_row];
+        uint array_counter_index = (bobhash[i].run(str, FT_SIZE)) & array_counter_mask;
+
+        #ifdef DEBUG
+        cout << "unconfirmed_array_counter_index: " << array_counter_index << "\n";
+        #endif
+
+        bool new_counter = false;
+        while (new_counter == false)
+        {
+            new_counter = true;
+
+            for (int j = 0; j < (i-COUNTER_HASH); j++)
+            {
+                if (array_counter_index == previous_hashes[j])
+                {
+                    new_counter = false;
+                    array_counter_index = array_counter_index == array_counter_mask ? 0 : ++array_counter_index;
+                    break;
+                }
+            }
+        }
+
+        previous_hashes[i-COUNTER_HASH] = array_counter_index;
         
         uint32_t value = orca_sketch[exact_array_index + array_counter_index]; // value stored in counter
         if (value < min)
@@ -175,22 +189,9 @@ uint32_t ORCASketch::query(const char * str)
             min = value;
         }
 
-        // reassign counters to a new row
-        for (int n = array_counter_index_row; n < temp_array_counter_row_mask; n++)
-        {
-            remaining_array_counters[n] = remaining_array_counters[n + 1];
-        }
-        temp_array_counter_row_mask -= 1;
-
         #ifdef DEBUG
         cout << "array_counter_index " << i << ": " << array_counter_index << "\n";
         cout << "value: " << value << "\n";
-        cout << "remaining_array_counters: ";
-        for (int i = 0; i < array_size; i++)
-        {
-            cout << remaining_array_counters[i] << " ";
-        }
-        cout << "\n";
         #endif
     }
 

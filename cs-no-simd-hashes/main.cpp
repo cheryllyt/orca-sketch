@@ -32,7 +32,7 @@ using namespace std;
 
     command to compile on MacBook:
     ------------------------------
-    g++ -std=c++17 main.cpp ORCAS.cpp ORCASTests.cpp salsa-src/BobHash.cpp -DDEBUG -DCOUNTERONE
+    g++ -std=c++17 -O3 main.cpp ORCAS.cpp ORCASTests.cpp salsa-src/BobHash.cpp -DDEBUG -DCOUNTERONE
     e.g. ./a.out 10 42 1 32 4; ./a.out 10000000 42 -1 1024 128
 */
 

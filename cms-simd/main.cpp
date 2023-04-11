@@ -32,9 +32,25 @@ using namespace std;
 
     command to compile on MacBook:
     ------------------------------
-    g++ -std=c++17 -mavx2 main.cpp ORCAS.cpp ORCASTests.cpp salsa-src/BobHash.cpp -framework Python -DDEBUG
+    g++ -std=c++17 -mavx2 -O3 main.cpp ORCAS.cpp ORCASTests.cpp salsa-src/BobHash.cpp -framework Python -DDEBUG
     e.g. ./a.out 10 42 1 256 3; ./a.out 10000000 42 -1 1024 4
 */
+
+#ifdef DEBUG
+template<int number_of_options_ind>
+void run_debug_code(int N, int sketch_size, int number_of_arrays, int number_of_array_counters, int seed, const char* data)
+{
+    ORCASketch<number_of_options_ind> orcasketch;
+    orcasketch.initialize(sketch_size, number_of_arrays, number_of_array_counters, seed);
+
+    int64_t stop_loop = N * FT_SIZE;
+    for (int64_t i = 0; i < stop_loop; i += FT_SIZE)
+    {
+        orcasketch.increment(data + i);
+        orcasketch.query(data + i);
+    }
+}
+#endif
 
 int main(int argc, char* argv[])
 {
@@ -84,15 +100,25 @@ int main(int argc, char* argv[])
     }
     
     #ifdef DEBUG // ORCA sketch driver code
-    ORCASketch orcasketch;
-    orcasketch.initialize(sketch_size, number_of_arrays, number_of_array_counters, seed);
-
-    int64_t stop_loop = N * FT_SIZE;
-	for (int64_t i = 0; i < stop_loop; i += FT_SIZE)
-	{
-		orcasketch.increment(data + i);
-        orcasketch.query(data + i);
-	}
+    if (ARRAY_SIZE == 8)
+    {
+        if (number_of_array_counters == 2 || number_of_array_counters == 6)
+        {
+            run_debug_code<OPTION_8C2_6>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+        }
+        else if (number_of_array_counters == 3 || number_of_array_counters == 5)
+        {
+            run_debug_code<OPTION_8C3_5>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+        }
+        else if (number_of_array_counters == 4)
+        {
+            run_debug_code<OPTION_8C4>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+        }
+        else if (number_of_array_counters == 7)
+        {
+            run_debug_code<OPTION_8C7>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+        }
+    }
     #endif
 
     /*
@@ -103,9 +129,34 @@ int main(int argc, char* argv[])
     */
 
     #ifndef DEBUG // ORCA sketch tests
-    test_orcas_error_on_arrival(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
-    test_orcas_speed(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
-    test_orcas_final_error(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+    if (ARRAY_SIZE == 8)
+    {
+        if (number_of_array_counters == 2 || number_of_array_counters == 6)
+        {
+            test_orcas_error_on_arrival<OPTION_8C2_6>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+            test_orcas_speed<OPTION_8C2_6>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+            test_orcas_final_error<OPTION_8C2_6>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+        }
+        else if (number_of_array_counters == 3 || number_of_array_counters == 5)
+        {
+            test_orcas_error_on_arrival<OPTION_8C3_5>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+            test_orcas_speed<OPTION_8C3_5>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+            test_orcas_final_error<OPTION_8C3_5>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+        }
+        else if (number_of_array_counters == 4)
+        {
+            test_orcas_error_on_arrival<OPTION_8C4>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+            test_orcas_speed<OPTION_8C4>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+            test_orcas_final_error<OPTION_8C4>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+        }
+        else if (number_of_array_counters == 7)
+        {
+            test_orcas_error_on_arrival<OPTION_8C7>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+            test_orcas_speed<OPTION_8C7>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+            test_orcas_final_error<OPTION_8C7>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+        }
+    }
+
     cout << "\nTests complete!\n";
     #endif
 

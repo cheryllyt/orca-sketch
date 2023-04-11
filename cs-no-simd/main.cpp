@@ -32,9 +32,25 @@ using namespace std;
 
     command to compile on MacBook:
     ------------------------------
-    g++ -std=c++17 main.cpp ORCAS.cpp ORCASTests.cpp salsa-src/BobHash.cpp -framework Python -DDEBUG -DCOUNTERONE
+    g++ -std=c++17 -O3 main.cpp ORCAS.cpp ORCASTests.cpp salsa-src/BobHash.cpp -framework Python -DDEBUG -DCOUNTERONE
     e.g. ./a.out 10 42 1 32 4; ./a.out 10000000 42 -1 1024 128
 */
+
+#ifdef DEBUG
+template<int number_of_options_ind>
+void run_debug_code(int N, int sketch_size, int number_of_arrays, int number_of_array_counters, int seed, const char* data)
+{
+    ORCASketch<number_of_options_ind> orcasketch;
+    orcasketch.initialize(sketch_size, number_of_arrays, number_of_array_counters, seed);
+
+    int64_t stop_loop = N * FT_SIZE;
+    for (int64_t i = 0; i < stop_loop; i += FT_SIZE)
+    {
+        orcasketch.increment(data + i);
+        orcasketch.query(data + i);
+    }
+}
+#endif
 
 int main(int argc, char* argv[])
 {
@@ -57,6 +73,9 @@ int main(int argc, char* argv[])
     // for creating ORCA sketch
     int sketch_size = atoi(argv[4]); // e.g. 32
     int number_of_arrays = atoi(argv[5]); // e.g. 4
+
+    // for choosing correct <number_of_options_ind>
+    int array_size = (int)(sketch_size / number_of_arrays);
 
     // hardcoded median computations for efficiency
     #ifdef COUNTERONE
@@ -92,15 +111,49 @@ int main(int argc, char* argv[])
     }
     
     #ifdef DEBUG // ORCA sketch driver code
-    ORCASketch orcasketch;
-    orcasketch.initialize(sketch_size, number_of_arrays, number_of_array_counters, seed);
-
-    int64_t stop_loop = N * FT_SIZE;
-	for (int64_t i = 0; i < stop_loop; i += FT_SIZE)
-	{
-		orcasketch.increment(data + i);
-        orcasketch.query(data + i);
-	}
+    if (array_size == 16)
+    {
+        if (number_of_array_counters == 1)
+        {
+            run_debug_code<OPTION_16C1_4C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+        }
+        else if (number_of_array_counters == 3)
+        {
+            run_debug_code<OPTION_16C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+        }
+        else if (number_of_array_counters == 5)
+        {
+            run_debug_code<OPTION_16C5>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+        }
+    }
+    else if (array_size == 64)
+    {
+        if (number_of_array_counters == 3)
+        {
+            run_debug_code<OPTION_64C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+        }
+    }
+    else if (array_size == 32)
+    {
+        if (number_of_array_counters == 3)
+        {
+            run_debug_code<OPTION_32C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+        }
+    }
+    else if (array_size == 8)
+    {
+        if (number_of_array_counters == 3)
+        {
+            run_debug_code<OPTION_8C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+        }
+    }
+    else if (array_size == 4)
+    {
+        if (number_of_array_counters == 3)
+        {
+            run_debug_code<OPTION_16C1_4C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+        }
+    }
     #endif
 
     /*
@@ -111,9 +164,64 @@ int main(int argc, char* argv[])
     */
 
     #ifndef DEBUG // ORCA sketch tests
-    test_orcas_error_on_arrival(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
-    test_orcas_speed(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
-    test_orcas_final_error(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+    if (array_size == 16)
+    {
+        if (number_of_array_counters == 1)
+        {
+            test_orcas_error_on_arrival<OPTION_16C1_4C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+            test_orcas_speed<OPTION_16C1_4C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+            test_orcas_final_error<OPTION_16C1_4C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+        }
+        else if (number_of_array_counters == 3)
+        {
+            test_orcas_error_on_arrival<OPTION_16C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+            test_orcas_speed<OPTION_16C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+            test_orcas_final_error<OPTION_16C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+        }
+        else if (number_of_array_counters == 5)
+        {
+            test_orcas_error_on_arrival<OPTION_16C5>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+            test_orcas_speed<OPTION_16C5>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+            test_orcas_final_error<OPTION_16C5>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+        }
+    }
+    else if (array_size == 64)
+    {
+        if (number_of_array_counters == 3)
+        {
+            test_orcas_error_on_arrival<OPTION_64C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+            test_orcas_speed<OPTION_64C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+            test_orcas_final_error<OPTION_64C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+        }
+    }
+    else if (array_size == 32)
+    {
+        if (number_of_array_counters == 3)
+        {
+            test_orcas_error_on_arrival<OPTION_32C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+            test_orcas_speed<OPTION_32C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+            test_orcas_final_error<OPTION_32C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+        }
+    }
+    else if (array_size == 8)
+    {
+        if (number_of_array_counters == 3)
+        {
+            test_orcas_error_on_arrival<OPTION_8C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+            test_orcas_speed<OPTION_8C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+            test_orcas_final_error<OPTION_8C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+        }
+    }
+    else if (array_size == 4)
+    {
+        if (number_of_array_counters == 3)
+        {
+            test_orcas_error_on_arrival<OPTION_16C1_4C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+            test_orcas_speed<OPTION_16C1_4C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+            test_orcas_final_error<OPTION_16C1_4C3>(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+        }
+    }
+
     cout << "\nTests complete!\n";
     #endif
 

@@ -15,6 +15,7 @@
 
 #include "salsa-src/BobHash.hpp"
 
+template<int number_of_options_ind> // max index for lookup table
 class ORCASketch {
 
 	int sketch_size;
@@ -32,7 +33,6 @@ class ORCASketch {
     int number_of_bits_array_size; // number of bits required to store array size
 
     int number_of_options;
-    int number_of_options_ind; // max index for lookup table
     
     __m256i *array_counter_vec_lookup_table;
     __m256i *array_counter_inv_lookup_table;

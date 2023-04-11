@@ -4,18 +4,21 @@
 
 using namespace std;
 
-ORCASketch::ORCASketch()
+template<int number_of_options_ind>
+ORCASketch<number_of_options_ind>::ORCASketch()
 {
 }
 
-ORCASketch::~ORCASketch()
+template<int number_of_options_ind>
+ORCASketch<number_of_options_ind>::~ORCASketch()
 {
     delete[] array_counter_vec_lookup_table;
     delete[] array_counter_ind_lookup_table;
     delete[] orca_sketch;
 }
 
-void ORCASketch::initialize(int sketch_size, int number_of_arrays, int number_of_array_counters, int seed)
+template<int number_of_options_ind>
+void ORCASketch<number_of_options_ind>::initialize(int sketch_size, int number_of_arrays, int number_of_array_counters, int seed)
 {
     this->sketch_size = sketch_size;
     this->number_of_arrays = number_of_arrays;
@@ -38,7 +41,7 @@ void ORCASketch::initialize(int sketch_size, int number_of_arrays, int number_of
     number_of_bits_array_size = __builtin_ctz(array_size);
 
     set_number_of_lookup_table_options();
-    number_of_options_ind = number_of_options - 1;
+    assert(number_of_options_ind == (number_of_options - 1));
     create_lookup_tables(n_array_counter_is_pow_2);
 
     #ifdef DEBUG
@@ -92,7 +95,8 @@ void ORCASketch::initialize(int sketch_size, int number_of_arrays, int number_of
     bobhash.initialize(seed*(7) + 100);
 }
 
-void ORCASketch::increment(const char * str)
+template<int number_of_options_ind>
+void ORCASketch<number_of_options_ind>::increment(const char * str)
 {
     uint bobhash_return = (bobhash.run(str, FT_SIZE));
 
@@ -179,7 +183,8 @@ void ORCASketch::increment(const char * str)
     #endif
 }
 
-uint32_t ORCASketch::query(const char * str)
+template<int number_of_options_ind>
+uint32_t ORCASketch<number_of_options_ind>::query(const char * str)
 {
     uint bobhash_return = (bobhash.run(str, FT_SIZE));
 
@@ -236,7 +241,8 @@ uint32_t ORCASketch::query(const char * str)
     return min;
 }
 
-void ORCASketch::set_option_row_size(bool n_array_counter_is_pow_2)
+template<int number_of_options_ind>
+void ORCASketch<number_of_options_ind>::set_option_row_size(bool n_array_counter_is_pow_2)
 {    
     // directly set option_row_size as number_of_array_counters
     if (n_array_counter_is_pow_2)
@@ -251,7 +257,8 @@ void ORCASketch::set_option_row_size(bool n_array_counter_is_pow_2)
     }
 }
 
-void ORCASketch::set_number_of_lookup_table_options()
+template<int number_of_options_ind>
+void ORCASketch<number_of_options_ind>::set_number_of_lookup_table_options()
 {
     // run python script to generate lookup table
     char py_file_name[] = "lookup_table.py";
@@ -297,7 +304,8 @@ void ORCASketch::set_number_of_lookup_table_options()
 }
 
 // Lookup table (of counter combinations)
-void ORCASketch::create_lookup_tables(bool n_array_counter_is_pow_2)
+template<int number_of_options_ind>
+void ORCASketch<number_of_options_ind>::create_lookup_tables(bool n_array_counter_is_pow_2)
 {
     int ind_lookup_table_len = number_of_options * option_row_size;
     
@@ -394,3 +402,9 @@ void ORCASketch::create_lookup_tables(bool n_array_counter_is_pow_2)
         }
     }
 }
+
+// template explicit instantiations
+template class ORCASketch<OPTION_8C2_6>;
+template class ORCASketch<OPTION_8C3_5>;
+template class ORCASketch<OPTION_8C4>;
+template class ORCASketch<OPTION_8C7>;

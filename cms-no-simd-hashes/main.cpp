@@ -29,7 +29,7 @@ using namespace std;
     4. Use the 22 bits to map into a row in the lookup table
     command to compile on MacBook:
     ------------------------------
-    g++ -std=c++17 main.cpp ORCAS.cpp ORCASTests.cpp salsa-src/BobHash.cpp -DDEBUG
+    g++ -std=c++17 -O3 main.cpp ORCAS.cpp ORCASTests.cpp salsa-src/BobHash.cpp -DDEBUG
     e.g. ./a.out 10 42 1 32 4 3; ./a.out 10000000 42 -1 1024 128 4
 */
 
@@ -101,8 +101,8 @@ int main(int argc, char* argv[])
     */
 
     #ifndef DEBUG // ORCA sketch tests
-    test_orcas_error_on_arrival(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
-    test_orcas_speed(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+    // test_orcas_error_on_arrival(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
+    // test_orcas_speed(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
     test_orcas_final_error(N, sketch_size, number_of_arrays, number_of_array_counters, seed, data);
     cout << "\nTests complete!\n";
     #endif

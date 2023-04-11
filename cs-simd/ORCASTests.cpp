@@ -12,9 +12,10 @@
 using namespace std;
 
 // test referenced from: https://github.com/SALSA-ICDE2021/SALSA
+template<int number_of_options_ind>
 void test_orcas_error_on_arrival(int N, int sketch_size, int number_of_arrays, int number_of_array_counters, int seed, const char* data)
 {
-    ORCASketch orca_sketch;
+    ORCASketch<number_of_options_ind> orca_sketch;
     orca_sketch.initialize(sketch_size, number_of_arrays, number_of_array_counters, seed);
 
     unordered_map<uint64_t, uint64_t> true_sizes;
@@ -65,9 +66,10 @@ void test_orcas_error_on_arrival(int N, int sketch_size, int number_of_arrays, i
 }
 
 // test referenced from: https://github.com/SALSA-ICDE2021/SALSA
+template<int number_of_options_ind>
 void test_orcas_speed(int N, int sketch_size, int number_of_arrays, int number_of_array_counters, int seed, const char* data)
 {
-    ORCASketch orca_sketch;
+    ORCASketch<number_of_options_ind> orca_sketch;
     orca_sketch.initialize(sketch_size, number_of_arrays, number_of_array_counters, seed);
 
     int64_t stop_loop = N * FT_SIZE;
@@ -95,9 +97,10 @@ void test_orcas_speed(int N, int sketch_size, int number_of_arrays, int number_o
 }
 
 // test referenced from: https://github.com/SALSA-ICDE2021/SALSA
+template<int number_of_options_ind>
 void test_orcas_final_error(int N, int sketch_size, int number_of_arrays, int number_of_array_counters, int seed, const char* data)
 {
-    ORCASketch orca_sketch;
+    ORCASketch<number_of_options_ind> orca_sketch;
     orca_sketch.initialize(sketch_size, number_of_arrays, number_of_array_counters, seed);
 
     unordered_map<uint64_t, uint64_t> true_sizes;
@@ -172,3 +175,16 @@ void test_orcas_final_error(int N, int sketch_size, int number_of_arrays, int nu
 	}
 	results_file << endl;
 }
+
+// template explicit instantiations
+template void test_orcas_error_on_arrival<OPTION_8C1>(int N, int sketch_size, int number_of_arrays, int number_of_array_counters, int seed, const char* data);
+template void test_orcas_speed<OPTION_8C1>(int N, int sketch_size, int number_of_arrays, int number_of_array_counters, int seed, const char* data);
+template void test_orcas_final_error<OPTION_8C1>(int N, int sketch_size, int number_of_arrays, int number_of_array_counters, int seed, const char* data);
+
+template void test_orcas_error_on_arrival<OPTION_8C3>(int N, int sketch_size, int number_of_arrays, int number_of_array_counters, int seed, const char* data);
+template void test_orcas_speed<OPTION_8C3>(int N, int sketch_size, int number_of_arrays, int number_of_array_counters, int seed, const char* data);
+template void test_orcas_final_error<OPTION_8C3>(int N, int sketch_size, int number_of_arrays, int number_of_array_counters, int seed, const char* data);
+
+template void test_orcas_error_on_arrival<OPTION_8C5>(int N, int sketch_size, int number_of_arrays, int number_of_array_counters, int seed, const char* data);
+template void test_orcas_speed<OPTION_8C5>(int N, int sketch_size, int number_of_arrays, int number_of_array_counters, int seed, const char* data);
+template void test_orcas_final_error<OPTION_8C5>(int N, int sketch_size, int number_of_arrays, int number_of_array_counters, int seed, const char* data);

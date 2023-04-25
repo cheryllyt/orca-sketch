@@ -146,7 +146,7 @@ def plot_all_alpha():
     plot_speed_and_error(1.0, COUNTERS_MODE, fixed_array_size=8, fixed_sketch_size=32768) # fix array_size at 8 when plotting different array_counter
     plot_speed_and_error(1.0, COUNTERS_MODE, fixed_array_size=8, fixed_sketch_size=2097152)
     plot_speed_and_error(1.0, COUNTERS_MODE, fixed_array_size=8, fixed_sketch_size=4194304)
-    # plot_speed_and_error(1.0, SIZE_MODE, fixed_array_counter=3) # fix array_counter at 2 when plotting different array_size
+    # plot_speed_and_error(1.0, SIZE_MODE, fixed_array_counter=3) # fix array_counter at 3 when plotting different array_size
     
     plt.show()
 

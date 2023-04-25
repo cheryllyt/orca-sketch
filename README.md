@@ -1,4 +1,4 @@
-# orca-sketch
+# One Random Counter Array (ORCA) Sketch
 
 All source code (files) in `salsa-src` directories are taken directly from SALSA [1].
 

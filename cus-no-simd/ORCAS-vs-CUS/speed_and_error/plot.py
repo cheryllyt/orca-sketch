@@ -3,11 +3,11 @@ import matplotlib.pyplot as plt
 import statistics
 
 ORCAS = 'ORCAS'
-CMS = 'CMS'
+CUS = 'CUS'
 
-SKETCHES = [ORCAS, CMS]
+SKETCHES = [ORCAS, CUS]
 
-def get_all_values(speed_data, error_data, fixed_orcas, fixed_cms):
+def get_all_values(speed_data, error_data, fixed_orcas, fixed_cus):
 
     speed_dict = {}
     error_dict = {}
@@ -50,9 +50,9 @@ def get_all_values(speed_data, error_data, fixed_orcas, fixed_cms):
                             error_dict[key][sketch_size] = []
                         error_dict[key][sketch_size].append(l2)
 
-        elif sketch == CMS:
-            for row_number in fixed_cms:
-                key = CMS + '-' + str(row_number)
+        elif sketch == CUS:
+            for row_number in fixed_cus:
+                key = CUS + '-' + str(row_number)
 
                 speed_dict[key] = {}
                 error_dict[key] = {}
@@ -107,11 +107,7 @@ def get_median(speed_dict_all, error_dict_all):
 
     return speed_dict, error_dict
 
-def plot_speed_and_error(alpha:float, fixed_orcas:int, fixed_cms:int): # ORCAS array counters, CMS row numbers
-
-    # alpha must be 3 char (1 digit before '.' and 1 digit after)
-    alpha_str = str(alpha)[0] + '-' + str(alpha)[-1]
-    alpha_folder_name = 'alpha_' + alpha_str + '/'
+def plot_speed_and_error(alpha:float, fixed_orcas:int, fixed_cus:int): # ORCAS array counters, CUS row numbers
 
     speed_data = {}
     error_data = {}
@@ -120,24 +116,29 @@ def plot_speed_and_error(alpha:float, fixed_orcas:int, fixed_cms:int): # ORCAS a
         speed_data[sketch] = []
         error_data[sketch] = []
 
-    # e.g. alpha_1-0/seed_1_test_orcas_error_on_arrival.txt
+    # alpha must be 3 char (1 digit before '.' and 1 digit after)
+    alpha_str = str(alpha)[0] + '-' + str(alpha)[-1]
+    alpha_folder_name = '../../ORCAS-test-results/alpha_' + alpha_str + '/counters_mode/'
+
     for fn in os.listdir(alpha_folder_name):
         indiv_data = open(alpha_folder_name + fn).readlines()
-
-        if ORCAS.lower() in fn:
-            indiv_data = indiv_data[1:] # remove zipf generation line
-            if 'speed' in fn:
-                speed_data[ORCAS] = speed_data[ORCAS] + indiv_data
-            elif 'error_on_arrival' in fn:
-                error_data[ORCAS] = error_data[ORCAS] + indiv_data
-
-        elif CMS.lower() in fn:
-            if 'speed' in fn:
-                speed_data[CMS] = speed_data[CMS] + indiv_data
-            elif 'error_on_arrival' in fn:
-                error_data[CMS] = error_data[CMS] + indiv_data
+        indiv_data = indiv_data[1:] # remove zipf generation line
+        if 'speed' in fn:
+            speed_data[ORCAS] = speed_data[ORCAS] + indiv_data
+        elif 'error_on_arrival' in fn:
+            error_data[ORCAS] = error_data[ORCAS] + indiv_data
     
-    speed_dict_all, error_dict_all = get_all_values(speed_data, error_data, fixed_orcas, fixed_cms)
+    alpha_str = str(alpha)[0] + '-' + str(alpha)[-1]
+    alpha_folder_name = '../../../baseline-results/cus/alpha_' + alpha_str + '/'
+
+    for fn in os.listdir(alpha_folder_name):
+        indiv_data = open(alpha_folder_name + fn).readlines()
+        if 'speed' in fn:
+            speed_data[CUS] = speed_data[CUS] + indiv_data
+        elif 'error_on_arrival' in fn:
+            error_data[CUS] = error_data[CUS] + indiv_data
+
+    speed_dict_all, error_dict_all = get_all_values(speed_data, error_data, fixed_orcas, fixed_cus)
     speed_dict, error_dict = get_median(speed_dict_all, error_dict_all)
 
     fig, (speed_ax, error_ax) = plt.subplots(1, 2)
@@ -155,7 +156,7 @@ def plot_speed_and_error(alpha:float, fixed_orcas:int, fixed_cms:int): # ORCAS a
             error_y = [speed for (sketch_size, speed) in error_dict[key]]
             error_ax.plot(error_x, error_y, label=str(key_label))
 
-        elif CMS in key:
+        elif CUS in key:
             row_number = int(key.split('-')[1])
             key_label = key.split('-')[0] + ': ' + key.split('-')[1]
 
@@ -168,26 +169,29 @@ def plot_speed_and_error(alpha:float, fixed_orcas:int, fixed_cms:int): # ORCAS a
             error_ax.plot(error_x, error_y, label=str(key_label))
 
     N = speed_data[ORCAS][0].split('\t')[1]
-    fig_title = 'N = ' + N + ' | alpha = ' + str(alpha) + ' | ORCAS config: array counter | CMS config: row number'
-    fig.suptitle(fig_title, fontsize=18)
+    fig_title = 'N = ' + N + ' | alpha = ' + str(alpha) + ' | ORCAS config: array counter | CUS config: row number'
+    # fig.suptitle(fig_title, fontsize=18)
 
-    speed_ax.set_xlabel('Memory [KB]', fontsize=18)
-    speed_ax.set_ylabel('Throughput [Mops]', fontsize=18)
-    speed_ax.tick_params(axis='both', which='both', labelsize=15)
+    speed_ax.set_xlabel('Memory [KB]', fontsize=22)
+    speed_ax.set_ylabel('Throughput [Mops]', fontsize=22)
+    speed_ax.tick_params(axis='both', which='both', labelsize=20, width=1, length=4)
     speed_ax.set_xscale('log',base=10)
-    speed_ax.legend(loc="upper right", prop={"size":11})
+    # speed_ax.legend(loc="upper right", prop={"size":11})
 
-    error_ax.set_xlabel('Memory [KB]', fontsize=18)
-    error_ax.set_ylabel('L2 Error', fontsize=18)
-    error_ax.tick_params(axis='both', which='both', labelsize=15)
+    error_ax.set_xlabel('Memory [KB]', fontsize=22)
+    error_ax.set_ylabel('L2 Error', fontsize=22)
+    error_ax.tick_params(axis='both', which='both', labelsize=20, width=1, length=4)
     error_ax.set_xscale('log',base=10)
     error_ax.set_yscale('log',base=10)
-    error_ax.legend(loc="upper right", prop={"size":11})
+    error_ax.legend(loc="upper right", prop={"size":20}, ncol=len([key for key in speed_dict]), bbox_to_anchor=(0.97, 1.14))
 
 def plot_all_alpha():
     
-    plot_speed_and_error(1.0, fixed_orcas=[3,4], fixed_cms=[1,2,3])
-    plot_speed_and_error(1.0, fixed_orcas=[3,4], fixed_cms=[1,2,3,4])
+    # plot_speed_and_error(1.0, fixed_orcas=[3,4], fixed_cus=[1,2,3])
+    # plot_speed_and_error(1.0, fixed_orcas=[3,4], fixed_cus=[1,2,3,4])
+    
+    plot_speed_and_error(1.5, fixed_orcas=[3,4], fixed_cus=[1,2,3])
+    plot_speed_and_error(0.8, fixed_orcas=[3,4], fixed_cus=[1,2,3])
     
     plt.show()
 

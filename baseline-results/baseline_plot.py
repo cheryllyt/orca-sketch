@@ -123,28 +123,28 @@ class BaselinePlot:
             for r in row_numbers:
                 speed_x = [r*w*4/1024 for (w, speed) in speed_dict[r]]
                 speed_y = [speed for (w, speed) in speed_dict[r]]
-                speed_ax.plot(speed_x, speed_y, label=str(r)+' rows')
+                speed_ax.plot(speed_x, speed_y, label=str(r))
 
                 error_x = [r*w*4/1024 for (w, l2) in error_dict[r]]
                 error_y = [l2 for (w, l2) in error_dict[r]]
-                error_ax.plot(error_x, error_y, label=str(r)+' rows')
+                error_ax.plot(error_x, error_y, label=str(r))
 
             N = speed_data[0].split('\t')[1]
             fig_title = 'N = ' + N + ' | alpha = ' + str(alpha)
-            fig.suptitle(fig_title, fontsize=18)
+            # fig.suptitle(fig_title, fontsize=18)
 
-            speed_ax.set_xlabel('Memory [KB]', fontsize=18)
-            speed_ax.set_ylabel('Throughput [Mops]', fontsize=18)
-            speed_ax.tick_params(axis='both', which='both', labelsize=15)
+            speed_ax.set_xlabel('Memory [KB]', fontsize=22)
+            speed_ax.set_ylabel('Throughput [Mops]', fontsize=22)
+            speed_ax.tick_params(axis='both', which='both', labelsize=20, width=1, length=4)
             speed_ax.set_xscale('log',base=10)
-            speed_ax.legend(loc="upper right", prop={"size":11})
+            # speed_ax.legend(loc="upper right", prop={"size":11})
 
-            error_ax.set_xlabel('Memory [KB]', fontsize=18)
-            error_ax.set_ylabel('L2 Error', fontsize=18)
-            error_ax.tick_params(axis='both', which='both', labelsize=15)
+            error_ax.set_xlabel('Memory [KB]', fontsize=22)
+            error_ax.set_ylabel('L2 Error', fontsize=22)
+            error_ax.tick_params(axis='both', which='both', labelsize=20, width=1, length=4)
             error_ax.set_xscale('log',base=10)
             error_ax.set_yscale('log',base=10)
-            error_ax.legend(loc="upper right", prop={"size":11})
+            error_ax.legend(loc="upper right", prop={"size":20}, ncol=len([key for key in speed_dict]), bbox_to_anchor=(0.7, 1.14))
         
         if plot_hh_bool:
 

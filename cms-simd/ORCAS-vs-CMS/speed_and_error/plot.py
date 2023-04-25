@@ -111,7 +111,7 @@ def plot_speed_and_error(alpha:float, fixed_orcas:int, fixed_cms:int): # ORCAS a
 
     # alpha must be 3 char (1 digit before '.' and 1 digit after)
     alpha_str = str(alpha)[0] + '-' + str(alpha)[-1]
-    alpha_folder_name = 'alpha_' + alpha_str + '/'
+    alpha_folder_name = '../alpha_' + alpha_str + '/'
 
     speed_data = {}
     error_data = {}
@@ -169,25 +169,28 @@ def plot_speed_and_error(alpha:float, fixed_orcas:int, fixed_cms:int): # ORCAS a
 
     N = speed_data[ORCAS][0].split('\t')[1]
     fig_title = 'N = ' + N + ' | alpha = ' + str(alpha) + ' | ORCAS config: array counter | CMS config: row number'
-    fig.suptitle(fig_title, fontsize=18)
+    # fig.suptitle(fig_title, fontsize=18)
 
-    speed_ax.set_xlabel('Memory [KB]', fontsize=18)
-    speed_ax.set_ylabel('Throughput [Mops]', fontsize=18)
-    speed_ax.tick_params(axis='both', which='both', labelsize=15)
+    speed_ax.set_xlabel('Memory [KB]', fontsize=22)
+    speed_ax.set_ylabel('Throughput [Mops]', fontsize=22)
+    speed_ax.tick_params(axis='both', which='both', labelsize=20, width=1, length=4)
     speed_ax.set_xscale('log',base=10)
-    speed_ax.legend(loc="upper right", prop={"size":11})
+    # speed_ax.legend(loc="upper right", prop={"size":11})
 
-    error_ax.set_xlabel('Memory [KB]', fontsize=18)
-    error_ax.set_ylabel('L2 Error', fontsize=18)
-    error_ax.tick_params(axis='both', which='both', labelsize=15)
+    error_ax.set_xlabel('Memory [KB]', fontsize=22)
+    error_ax.set_ylabel('L2 Error', fontsize=22)
+    error_ax.tick_params(axis='both', which='both', labelsize=20, width=1, length=4)
     error_ax.set_xscale('log',base=10)
     error_ax.set_yscale('log',base=10)
-    error_ax.legend(loc="upper right", prop={"size":11})
+    error_ax.legend(loc="upper right", prop={"size":20}, ncol=len([key for key in speed_dict]), bbox_to_anchor=(0.97, 1.14))
 
 def plot_all_alpha():
     
-    plot_speed_and_error(1.0, fixed_orcas=[3,4], fixed_cms=[1,2,3])
-    plot_speed_and_error(1.0, fixed_orcas=[3,4], fixed_cms=[1,2,3,4])
+    # plot_speed_and_error(1.0, fixed_orcas=[3,4], fixed_cms=[1,2,3])
+    # plot_speed_and_error(1.0, fixed_orcas=[3,4], fixed_cms=[1,2,3,4])
+    
+    plot_speed_and_error(1.5, fixed_orcas=[3,4], fixed_cms=[1,2,3])
+    plot_speed_and_error(0.8, fixed_orcas=[3,4], fixed_cms=[1,2,3])
     
     plt.show()
 

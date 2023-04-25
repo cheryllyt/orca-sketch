@@ -224,7 +224,7 @@ uint32_t ORCASketch<number_of_options_ind>::query(const char * str)
     #ifdef COUNTERONE
     return counter_values[0];
 
-    // median code referenced from: https://github.com/SALSA-ICDE2021/SALSA
+    // median code referenced from: https://github.com/SALSA-ICDE2021/SALSA [1]
     #elif defined COUNTERFIVE
     return counter_values[1] < counter_values[0] ? counter_values[3] < counter_values[2] ? counter_values[1] < counter_values[3] ? counter_values[0] < counter_values[4] ? counter_values[0] < counter_values[3] ? counter_values[4] < counter_values[3] ? counter_values[4] : counter_values[3]
 		 : counter_values[2] < counter_values[0] ? counter_values[2] : counter_values[0]

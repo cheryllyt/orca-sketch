@@ -11,7 +11,7 @@
 
 using namespace std;
 
-// test referenced from: https://github.com/SALSA-ICDE2021/SALSA
+// test referenced from: https://github.com/SALSA-ICDE2021/SALSA [1]
 void test_orcas_error_on_arrival(int N, int sketch_size, int number_of_arrays, int number_of_array_counters, int seed, const char* data)
 {
     ORCASketch orca_sketch;
@@ -64,7 +64,7 @@ void test_orcas_error_on_arrival(int N, int sketch_size, int number_of_arrays, i
                  << endl;
 }
 
-// test referenced from: https://github.com/SALSA-ICDE2021/SALSA
+// test referenced from: https://github.com/SALSA-ICDE2021/SALSA [1]
 void test_orcas_speed(int N, int sketch_size, int number_of_arrays, int number_of_array_counters, int seed, const char* data)
 {
     ORCASketch orca_sketch;
@@ -94,7 +94,7 @@ void test_orcas_speed(int N, int sketch_size, int number_of_arrays, int number_o
                  << endl;
 }
 
-// test referenced from: https://github.com/SALSA-ICDE2021/SALSA
+// test referenced from: https://github.com/SALSA-ICDE2021/SALSA [1]
 void test_orcas_final_error(int N, int sketch_size, int number_of_arrays, int number_of_array_counters, int seed, const char* data)
 {
     ORCASketch orca_sketch;

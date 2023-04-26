@@ -1,5 +1,7 @@
 # One Random Counter Array (ORCA) Sketch
 
+**Command to compile:** The compilation command for each version of ORCA sketch is written on the respective `main.cpp` files.
+
 All source code (files) in `salsa-src` directories are taken directly from SALSA [1].
 
 References
